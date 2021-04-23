@@ -1,0 +1,43 @@
+[DEFAULT]
+# default level INFO
+LOGGING_LEVEL = DEBUG
+# dir default ./backups
+# DIR = /custom/path/of/folder/backup
+
+[mysql_service_name_1]
+TYPE = mysql
+DB_HOST = 127.0.0.1
+DB_PORT = 3306
+DB_DATABASE = dbname
+DB_USERNAME = username
+DB_PASSWORD = password
+# DIR = /mysql_service_name_1/custom/path/of/folder/backup
+
+[mysql_service_name_2]
+TYPE = mysql
+DB_HOST = 127.0.0.1
+DB_PORT = 3307
+DB_DATABASE = dbname
+DB_USERNAME = username
+DB_PASSWORD = password
+# DIR = /mysql_service_name_2/custom/path/of/folder/backup
+
+[mongo_service_name_1]
+TYPE = mongo
+DB_HOST = localhost
+DB_PORT = 27017
+DB_DATABASE = auth-db-name
+DB_USERNAME = username
+DB_PASSWORD = password
+DB_MECHANISM = SCRAM-SHA-256
+# DIR = /mongo_service_name_1/custom/path/of/folder/backup
+
+[mongo_service_name_2]
+TYPE = mongo
+DB_HOST = localhost
+DB_PORT = 27018
+DB_DATABASE = auth-db-name
+DB_USERNAME = username
+DB_PASSWORD = password
+DB_MECHANISM = SCRAM-SHA-256
+# DIR = /mongo_service_name_2/custom/path/of/folder/backup
