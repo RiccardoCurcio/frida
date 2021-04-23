@@ -10,22 +10,15 @@ import configparser
 
 if __name__ == '__main__':
     try:
-        # sudo apt-get install mysql-client
-        # crontab
-        # @midnight
-        # */5 * * * * python3 /home/riccardo/Develop/coloombus/dbs_backups/main.py
-        
-        # arg --config get specific ini file
-        # arg --config-gen create new ini file
-        # arg --clear or -c clear old backup
-        # arg --backup or -b create backup
-        # arg --only or -o name service
-        # arg --help or -h create backup
-        # arg --version or -v vesion
-        
-        # gzip
-        # scp
-        
+        if "--help" in sys.argv or "-h" in sys.argv:
+            print("help")
+            sys.exit(0)
+        if "--version" in sys.argv or "-v" in sys.argv:
+            print("0.0")
+            sys.exit(0)
+        if "--config" in sys.argv:
+            print("get config file")
+
         os.environ["PARENT_PATH"] = f'{pathlib.Path(__file__).parent}'
 
         config = configparser.ConfigParser()
@@ -33,10 +26,20 @@ if __name__ == '__main__':
 
         boot = Bootstrap(config)
         logger = boot.setLogger()
-        
+
         dbs = DbConnection(logger)
-        bk = Backups()
-        bk.run(dbs, config)
+        
+        if "--backup" in sys.argv or "-b" in sys.argv:
+            if "--only" in sys.argv or "-o" in sys.argv:
+                print("only name")
+            bk = Backups(logger)
+            bk.run(dbs, config)
+        if "--clear" in sys.argv or "-c" in sys.argv:
+            if "--only" in sys.argv or "-o" in sys.argv:
+                print("only name")
+            print("clear")
+        
+       
         
     except KeyboardInterrupt:
         logger.info('Stopping script...')

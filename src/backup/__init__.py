@@ -6,7 +6,8 @@ from configparser import ConfigParser
 
 class Backups:
     
-    def __init__(self):
+    def __init__(self, logger):
+        self.__logger = logger
         pass
     
     def run(self, dbs:DbConnection, config:ConfigParser):
@@ -28,8 +29,8 @@ class Backups:
                         config[service].get('DB_PASSWORD', None),
                         config[service].get('DB_CHARSET', 'utf8')
                     ):
-                        print(f'[{service}] Mysql connection \033[92mSUCCESS\033[0m')
-                        mysql = MysqlBk(config[service].get('DIR', default_dir))
+                        self.__logger.info(f'[{service}] Mysql connection SUCCESS')
+                        mysql = MysqlBk(self.__logger, config[service].get('DIR', default_dir))
                         mysql.run(
                             service,
                             config[service].get('DB_HOST', None),
@@ -39,7 +40,7 @@ class Backups:
                             config[service].get('DB_PASSWORD', None)
                         )
                     else:
-                        print(f"[{service}] Mysql Authentication \033[91mFAILURE\033[0m")
+                        self.__logger.error(f"[{service}] Mysql Authentication FAILURE")
 
                 if config[service].get('TYPE', None) == 'mongo':
                     if dbs.mongoconnect(
@@ -50,8 +51,8 @@ class Backups:
                         config[service].get('DB_PASSWORD', None),
                         config[service].get('DB_MECHANISM', 'SCRAM-SHA-256')
                     ):
-                        print(f'[{service}] Mongo connection \033[92mSUCCESS\033[0m')
-                        mongo = MongoBk(config[service].get('DIR', default_dir))
+                        self.__logger.info(f'[{service}] Mongo connection SUCCESS')
+                        mongo = MongoBk(self.__logger, config[service].get('DIR', default_dir))
                         mongo.run(
                             service,
                             config[service].get('DB_HOST', None),
@@ -61,6 +62,6 @@ class Backups:
                             config[service].get('DB_PASSWORD', None)
                         )
                     else:
-                        print(f"[{service}] Mongo Authentication \033[91mFAILURE\033[0m")
+                        self.__logger.info(f"[{service}] Mongo Authentication FAILURE")
             else:
-                print(f"[service={service}] [type={config[service].get('TYPE', None)}] No type allowed \033[91mFAILURE\033[0m")
+                self.__logger.error(f"[service={service}] [type={config[service].get('TYPE', None)}] No type allowed FAILURE")

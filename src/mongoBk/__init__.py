@@ -3,8 +3,10 @@ import subprocess
 from datetime import datetime
 
 class MongoBk:
-    def __init__(self, dir:str) -> None:
+    def __init__(self, logger, dir:str) -> None:
         self.__dir_path = dir
+        self.__logger = logger
+        
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path)
         
@@ -22,7 +24,7 @@ class MongoBk:
         if not os.path.exists(path):
             os.makedirs(path)
         
-        print(f"[{service}] Dump \033[92mSTART\033[0m")
+        self.__logger.info(f"[{service}] Dump START")
         cmd = [
             f'mongodump',
             f'--host={host}',
@@ -36,4 +38,4 @@ class MongoBk:
         with open(f'{os.getenv("PARENT_PATH")}/logs/{service}_{dir_name}.log', 'a') as f:
             subprocess.run(cmd, stderr=f, universal_newlines=True)
         
-        print(f"[{service}] Dump \033[92mFINISH\033[0m -> {path}/{dir_name}")
+        self.__logger.info(f"[{service}] Dump FINISH -> {path}/{dir_name}")

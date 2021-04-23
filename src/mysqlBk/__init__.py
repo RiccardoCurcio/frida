@@ -3,8 +3,9 @@ import os
 from datetime import datetime
 
 class MysqlBk:
-    def __init__(self, dir:str) -> None:
+    def __init__(self, logger, dir:str) -> None:
         self.__dir_path = dir
+        self.__logger = logger
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path)
             
@@ -22,7 +23,7 @@ class MysqlBk:
         if not os.path.exists(path):
             os.makedirs(path)
         
-        print(f"[{service}] Dump \033[92mSTART\033[0m")
+        self.__logger.info(f"[{service}] Dump START")
         cmd = [
             f'mysqldump',
             f'-h{host}',
@@ -33,4 +34,4 @@ class MysqlBk:
         ]
         with open(f'{os.getenv("PARENT_PATH")}/logs/{service}_{file_name}.log', 'a') as f:
             subprocess.run(cmd, stderr=f, stdout=open(f'{path}/{file_name}.sql', 'w'), universal_newlines=True)
-        print(f"[{service}] Dump \033[92mFINISH\033[0m -> {path}/{file_name}.sql")
+        self.__logger.info(f"[{service}] Dump FINISH -> {path}/{file_name}.sql")
