@@ -21,6 +21,7 @@ if __name__ == '__main__':
         # arg --backup or -b create backup
         # arg --only or -o name service
         # arg --help or -h create backup
+        # arg --version or -v vesion
         
         # gzip
         # scp
