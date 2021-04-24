@@ -16,7 +16,7 @@ if __name__ == '__main__':
         if "--version" in sys.argv or "-v" in sys.argv:
             print("0.0")
             sys.exit(0)
-        if "--config" in sys.argv:
+        if "--config=" in sys.argv:
             print("get config file")
 
         os.environ["PARENT_PATH"] = f'{pathlib.Path(__file__).parent}'
@@ -30,12 +30,12 @@ if __name__ == '__main__':
         dbs = DbConnection(logger)
         
         if "--backup" in sys.argv or "-b" in sys.argv:
-            if "--only" in sys.argv or "-o" in sys.argv:
+            if "--only=" in sys.argv:
                 print("only name")
             bk = Backups(logger)
             bk.run(dbs, config)
         if "--clear" in sys.argv or "-c" in sys.argv:
-            if "--only" in sys.argv or "-o" in sys.argv:
+            if "--only=" in sys.argv:
                 print("only name")
             print("clear")
         
