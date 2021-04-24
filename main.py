@@ -4,6 +4,7 @@ import os
 from src.bootstrap import Bootstrap
 from src.backup import Backups
 from src.clear import Clear
+from src.listBk import ListBk
 from src.database import DbConnection
 from src.help import Help
 from src.version import Version
@@ -13,7 +14,13 @@ from src.only import Only
 
 def main(logger, config):
     dbs = DbConnection(logger)
-
+    if "--list" in sys.argv or "-l" in sys.argv:
+        listBk = ListBk(logger)
+        listBk.run(
+            config,
+            Only.getOnlyService(sys.argv, logger, config)
+        )
+        exit(0)
     if "--backup" in sys.argv or "-b" in sys.argv:
         bk = Backups(logger)
         bk.run(
