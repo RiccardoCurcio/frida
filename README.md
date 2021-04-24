@@ -10,7 +10,6 @@ arg --only or -o name service
 arg --help or -h create backup
 arg --version or -v vesion
 
-arg --config-gen create new ini file
 # gzip
 # scp
 # sudo apt-get install mysql-client

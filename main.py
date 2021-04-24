@@ -3,6 +3,7 @@ import pathlib
 import os
 from src.bootstrap import Bootstrap
 from src.backup import Backups
+from src.clear import Clear
 from src.database import DbConnection
 from src.help import Help
 from src.version import Version
@@ -21,8 +22,11 @@ def main(logger, config):
             Only.getOnlyService(sys.argv, logger, config)
         )
     if "--clear" in sys.argv or "-c" in sys.argv:
-        Only.getOnlyService(sys.argv, logger, config)
-        print("clear")
+        clear = Clear(logger)
+        clear.run(
+            config,
+            Only.getOnlyService(sys.argv, logger, config)
+        )
 
 
 if __name__ == '__main__':

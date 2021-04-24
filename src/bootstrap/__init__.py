@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 
 
 class Bootstrap:
@@ -20,8 +21,11 @@ class Bootstrap:
                 )
             )
 
+            now = datetime.now()
+            log_name = now.strftime("%Y-%m-%d")
+
             logging.basicConfig(
-                filename=f'{os.getenv("PARENT_PATH")}/logs/application.log',
+                filename=f'{os.getenv("PARENT_PATH")}/logs/{log_name}_application.log',
                 filemode='a',
                 format='[%(asctime)s] %(levelname)s %(message)s'
             )

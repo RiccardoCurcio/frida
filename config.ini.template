@@ -1,7 +1,8 @@
 [DEFAULT]
 # default level INFO
 LOGGING_LEVEL = DEBUG
-CLEAR = 1M # D M Y 
+# days (default 365)
+CLEAR = 365
 # dir default ./backups
 # DIR = /custom/path/of/folder/backup
 
