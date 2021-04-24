@@ -1,5 +1,6 @@
 # backup
 python3 backup
+python3 main.py --config=config.ini -b --only=api_import
 
 # todo      
 arg --clear or -c clear old backup

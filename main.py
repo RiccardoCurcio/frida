@@ -1,46 +1,45 @@
 import sys
-import os
 import pathlib
+import os
 from src.bootstrap import Bootstrap
 from src.backup import Backups
 from src.database import DbConnection
-import configparser
+from src.help import Help
+from src.version import Version
+from src.config import Config
+from src.only import Only
 
+
+def main(logger, config):
+    dbs = DbConnection(logger)
+
+    if "--backup" in sys.argv or "-b" in sys.argv:
+        bk = Backups(logger)
+        bk.run(
+            dbs,
+            config,
+            Only.getOnlyService(sys.argv, logger, config)
+        )
+    if "--clear" in sys.argv or "-c" in sys.argv:
+        Only.getOnlyService(sys.argv, logger, config)
+        print("clear")
 
 
 if __name__ == '__main__':
     try:
+        os.environ["PARENT_PATH"] = f'{pathlib.Path(__file__).parent}'
         if "--help" in sys.argv or "-h" in sys.argv:
-            print("help")
+            Help.help()
             sys.exit(0)
         if "--version" in sys.argv or "-v" in sys.argv:
-            print("0.0")
+            Version.version()
             sys.exit(0)
-        if "--config=" in sys.argv:
-            print("get config file")
 
-        os.environ["PARENT_PATH"] = f'{pathlib.Path(__file__).parent}'
-
-        config = configparser.ConfigParser()
-        config.read(f'{os.getenv("PARENT_PATH")}/config.ini')
+        config = Config.setConfig(sys.argv)
 
         boot = Bootstrap(config)
         logger = boot.setLogger()
-
-        dbs = DbConnection(logger)
-        
-        if "--backup" in sys.argv or "-b" in sys.argv:
-            if "--only=" in sys.argv:
-                print("only name")
-            bk = Backups(logger)
-            bk.run(dbs, config)
-        if "--clear" in sys.argv or "-c" in sys.argv:
-            if "--only=" in sys.argv:
-                print("only name")
-            print("clear")
-        
-       
-        
+        main(logger, config)
     except KeyboardInterrupt:
         logger.info('Stopping script...')
         sys.exit(0)

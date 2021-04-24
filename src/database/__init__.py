@@ -1,16 +1,16 @@
-import pymongo
 from pymongo.mongo_client import MongoClient
 import pymysql
 
+
 class DbConnection:
-    
+
     def __init__(self, logger):
         self.__logger = logger
         pass
-    
+
     def mongoconnect(self, host, port, db, user, password, mechanism='SCRAM-SHA-256') -> bool:
         try:
-            client = pymongo.MongoClient(host+':'+port)
+            client = MongoClient(host+':'+port)
             client[db].authenticate(
                 user,
                 password,
@@ -21,7 +21,7 @@ class DbConnection:
             return False
         client.close()
         return True
-    
+
     def mysqlconnect(self, host, port, db, user, password, charset='utf8') -> bool:
         try:
             connection = pymysql.connect(
