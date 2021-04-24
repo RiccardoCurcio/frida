@@ -37,7 +37,7 @@ class ListMysqlBk:
             r = re.compile('.*\.sql$')
             print(f"\n[{service}]")
             for filename in list(filter(r.match, os.listdir(path))):
-                print(f"- {path}/{filename}")
+                print(f" - {path}/{filename}")
         except Exception as e:
             self.__logger.error(
                 f"[{service}] Mysql Dumps list error: {e}"
