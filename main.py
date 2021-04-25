@@ -46,6 +46,14 @@ if __name__ == '__main__':
             Help().version()
             sys.exit(0)
 
+        if (
+            "--backup" in sys.argv or "-b" in sys.argv or
+            "--clear" in sys.argv or "-c" in sys.argv or
+            "--list" in sys.argv or "-l" in sys.argv
+        ) is False:
+            Help().help()
+            sys.exit(0)
+
         config = Config.setConfig(sys.argv)
 
         boot = Bootstrap(config)
