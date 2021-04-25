@@ -1,13 +1,13 @@
 import sys
 import pathlib
 import os
+import subprocess
 from src.bootstrap import Bootstrap
 from src.backup import Backups
 from src.clear import Clear
 from src.listBk import ListBk
 from src.database import DbConnection
 from src.help import Help
-from src.version import Version
 from src.config import Config
 from src.only import Only
 
@@ -40,16 +40,27 @@ if __name__ == '__main__':
     try:
         os.environ["PARENT_PATH"] = f'{pathlib.Path(__file__).parent}'
         if "--help" in sys.argv or "-h" in sys.argv:
-            Help.help()
+            Help().help()
             sys.exit(0)
         if "--version" in sys.argv or "-v" in sys.argv:
-            Version.version()
+            Help().version()
             sys.exit(0)
 
         config = Config.setConfig(sys.argv)
 
         boot = Bootstrap(config)
         logger = boot.setLogger()
+
+        if subprocess.call(['which', 'mysqldump']) == 0:
+            logger.info('mysqldump found')
+        else:
+            logger.warning('mysqldump missing')
+
+        if subprocess.call(['which', 'mongodump']) == 0:
+            logger.info('mongodump found')
+        else:
+            logger.warning('mongodump missing')
+
         main(logger, config)
     except KeyboardInterrupt:
         logger.info('Stopping script...')
