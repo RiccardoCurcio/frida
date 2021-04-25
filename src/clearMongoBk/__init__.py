@@ -34,7 +34,7 @@ class ClearMongoBk:
                 )
                 return None
 
-            r = re.compile('.*\.tar.gz$')
+            r = re.compile('^[\d]{4}-[\d]{2}-[\d]{2}_[\d]{2}:[\d]{2}:[\d]{2}\.tar.gz$')
             self.__logger.info(f"[{service}] Mongo clear")
             for archiveName in list(filter(r.match, os.listdir(path))):
                 if datetime.strptime(archiveName[:-7].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
@@ -60,7 +60,7 @@ class ClearMongoBk:
         try:
             count = 0
             path = f'{os.getenv("PARENT_PATH")}/logs'
-            r = re.compile(f'{service}_.*\.log$')
+            r = re.compile(f'^{service}_[\d]{{4}}-[\d]{{2}}-[\d]{{2}}_[\d]{{2}}:[\d]{{2}}:[\d]{{2}}\.log$')
             self.__logger.info(f"[{service}] Mongo log files clear START")
             for filename in list(filter(r.match, os.listdir(path))):
                 file_noservice = filename.replace(f"{service}_", "")

@@ -39,7 +39,7 @@ class ClearMysqlBk:
                 )
                 return None
 
-            r = re.compile('.*\.tar.gz$')
+            r = re.compile('^[\d]{4}-[\d]{2}-[\d]{2}_[\d]{2}:[\d]{2}:[\d]{2}\.tar.gz$')
             self.__logger.info(f"[{service}] Mysql Dumps clear START")
             for filename in list(filter(r.match, os.listdir(path))):
                 if datetime.strptime(filename[:-7].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
@@ -65,9 +65,10 @@ class ClearMysqlBk:
         try:
             count = 0
             path = f'{os.getenv("PARENT_PATH")}/logs'
-            r = re.compile(f'^{service}_.*\.log$')
+            r = re.compile(f'^{service}_[\d]{{4}}-[\d]{{2}}-[\d]{{2}}_[\d]{{2}}:[\d]{{2}}:[\d]{{2}}\.log$')
             self.__logger.info(f"[{service}] Mysql log files clear START")
             for filename in list(filter(r.match, os.listdir(path))):
+                print(filename)
                 file_noservice = filename.replace(f"{service}_", "")
                 if datetime.strptime(file_noservice[:-4].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
                     try:

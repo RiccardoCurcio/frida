@@ -46,7 +46,7 @@ class Clear:
         try:
             count = 0
             path = f'{os.getenv("PARENT_PATH")}/logs'
-            r = re.compile(f'.*\_application.log$')
+            r = re.compile('^[\d]{4}-[\d]{2}-[\d]{2}_application.log$')
             self.__logger.info(f"Application log files clear START")
             for filename in list(filter(r.match, os.listdir(path))):
                 file_noservice = filename.replace(f"_application", "")
