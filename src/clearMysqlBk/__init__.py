@@ -39,10 +39,10 @@ class ClearMysqlBk:
                 )
                 return None
 
-            r = re.compile('.*\.sql$')
+            r = re.compile('.*\.tar.gz$')
             self.__logger.info(f"[{service}] Mysql Dumps clear START")
             for filename in list(filter(r.match, os.listdir(path))):
-                if datetime.strptime(filename[:-4].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
+                if datetime.strptime(filename[:-7].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
                     try:
                         os.remove(f"{path}/{filename}")
                         self.__logger.info(
@@ -51,14 +51,14 @@ class ClearMysqlBk:
                         count = count + 1
                     except Exception as e:
                         self.__logger.error(
-                            f"[{service}] Mysql Dumps file delete -> {path}/{filename} error: {e}"
+                            f"[{service}] Mysql archive delete -> {path}/{filename} error: {e}"
                         )
             self.__logger.info(
-                f"[{service}] Mysql Dumps clear FINISH {count} files deleted"
+                f"[{service}] Mysql archives clear FINISH {count} files deleted"
             )
         except Exception as e:
             self.__logger.error(
-                f"[{service}] Mysql Dumps clear  error: {e}"
+                f"[{service}] Mysql archives clear error: {e}"
             )
 
     def __deleteLogs(self, service: str) -> None:

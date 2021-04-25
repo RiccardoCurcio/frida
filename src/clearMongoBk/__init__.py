@@ -2,7 +2,6 @@ import os
 import re
 from datetime import datetime
 from logging import Logger
-from shutil import rmtree
 
 
 class ClearMongoBk:
@@ -35,21 +34,22 @@ class ClearMongoBk:
                 )
                 return None
 
+            r = re.compile('.*\.tar.gz$')
             self.__logger.info(f"[{service}] Mongo clear")
-            for dir_name in os.listdir(path):
-                if datetime.strptime(dir_name.replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
+            for archiveName in list(filter(r.match, os.listdir(path))):
+                if datetime.strptime(archiveName[:-7].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
                     try:
-                        rmtree(f'{path}/{dir_name}')
+                        os.remove(f'{path}/{archiveName}')
                         self.__logger.info(
-                            f"[{service}] Mongo clear dir deleted -> {path}/{dir_name}"
+                            f"[{service}] Mongo clear archive deleted -> {path}/{archiveName}"
                         )
                         count = count + 1
                     except Exception as e:
                         self.__logger.error(
-                            f"[{service}] Mongo dir delete -> {path}/{filename} error: {e}"
+                            f"[{service}] Mongo archive delete -> {path}/{archiveName} error: {e}"
                         )
             self.__logger.info(
-                f"[{service}] Mongo clear FINISH {count} dir deleted"
+                f"[{service}] Mongo clear FINISH {count} archive deleted"
             )
         except Exception as e:
             self.__logger.error(

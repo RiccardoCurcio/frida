@@ -1,4 +1,4 @@
-import subprocess
+from subprocess import run as runProcess, STDOUT
 import os
 from datetime import datetime
 
@@ -13,6 +13,7 @@ class MysqlBk:
 
         if not os.path.exists(f'{os.getenv("PARENT_PATH")}/logs'):
             os.makedirs(f'{os.getenv("PARENT_PATH")}/logs')
+        
         pass
 
     def run(
@@ -26,7 +27,12 @@ class MysqlBk:
     ) -> bool:
         try:
             now = datetime.now()
-            file_name = now.strftime("%Y-%m-%d_%H:%M:%S")
+            fileName = now.strftime("%Y-%m-%d_%H:%M:%S")
+
+            serviceLog = open(
+                f'{os.getenv("PARENT_PATH")}/logs/{service}_{fileName}.log',
+                'a'
+            )
 
             path = f'{self.__dir_path}/{service}'
 
@@ -34,6 +40,8 @@ class MysqlBk:
                 os.makedirs(path)
 
             self.__logger.info(f"[{service}] Dump START")
+            serviceLog.write(f"[{service}] Dump START\n")
+
             cmd = [
                 f'mysqldump',
                 f'-h{host}',
@@ -42,20 +50,66 @@ class MysqlBk:
                 f'-p{password}',
                 f'{db}'
             ]
+
             with open(
-                f'{os.getenv("PARENT_PATH")}/logs/{service}_{file_name}.log',
+                f'{os.getenv("PARENT_PATH")}/logs/{service}_{fileName}.log',
                 'a'
             ) as f:
-                subprocess.run(
+                runProcess(
                     cmd,
                     stderr=f,
-                    stdout=open(f'{path}/{file_name}.sql', 'w'),
+                    stdout=open(f'{path}/{fileName}.sql', 'w'),
                     universal_newlines=True
                 )
             self.__logger.info(
-                f"[{service}] Dump FINISH -> {path}/{file_name}.sql"
+                f"[{service}] Dump {path}/{fileName}.sql COMPLETE"
             )
+            serviceLog.write(
+                f"[{service}] Dump {path}/{fileName}.sql COMPLETE\n"
+            )
+            self.compressorTarGz(service, path, fileName, serviceLog)
+            serviceLog.close()
         except Exception as e:
             self.__logger.error(
-                f"[{service}] Dump FINISH {e}"
+                f"[{service}] Dump FAILURE {e}"
             )
+
+    def compressorTarGz(self, service, dirPath, fileName, serviceLog):
+        try:
+            self.__logger.info(
+                f"[{service}] Create archive {dirPath}/{fileName}.tar.gz START"
+            )
+            serviceLog.write(
+                f"[{service}] Create archive {dirPath}/{fileName}.tar.gz START\n"
+            )
+            DEVNULL = open(os.devnull, 'wb')
+            cmd = [
+                'tar',
+                '-czvf',
+                f'{dirPath}/{fileName}.tar.gz',
+                '-C',
+                f'{dirPath}',
+                f'{fileName}.sql'
+            ]
+            runProcess(
+                cmd,
+                stdout=DEVNULL,
+                stderr=STDOUT,
+                universal_newlines=True
+            )
+            self.__logger.info(
+                f"[{service}] Archive {dirPath}/{fileName}.tar.gz CREATED"
+            )
+            serviceLog.write(
+                f"[{service}] Archive {dirPath}/{fileName}.tar.gz CREATED\n"
+            )
+        finally:
+            DEVNULL.close()
+            os.remove(f'{dirPath}/{fileName}.sql')
+            self.__logger.info(
+                f"[{service}] Archive {dirPath}/{fileName}.tar.gz DELETED"
+            )
+            serviceLog.write(f"[{service}] {dirPath}/{fileName}.sql DELETED\n")
+        self.__logger.info(
+            f"[{service}] Archive {dirPath}/{fileName}.tar.gz COMPLETE"
+        )

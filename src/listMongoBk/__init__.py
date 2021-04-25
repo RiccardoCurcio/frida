@@ -1,4 +1,5 @@
 import os
+import re
 from logging import Logger
 
 
@@ -22,15 +23,14 @@ class ListMongoBk:
         try:
             path = f'{self.__dir_path}/{service}'
 
+            print(f"\n[{service}]")
             if not os.path.exists(path):
-                self.__logger.error(
-                    f"[{service}] Mongo path {path} not found"
-                )
+                print(f" - Empity")
                 return None
 
-            print(f"\n[{service}]")
-            for dir_name in os.listdir(path):
-                print(f' - {path}/{dir_name}')
+            r = re.compile('.*\.tar.gz$')
+            for filename in list(filter(r.match, os.listdir(path))):
+                print(f" - {path}/{filename}")
         except Exception as e:
             self.__logger.error(
                 f"[{service}] Mongo  FAILURE {e}"

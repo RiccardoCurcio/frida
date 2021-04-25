@@ -28,14 +28,12 @@ class ListMysqlBk:
         try:
             path = f'{self.__dir_path}/{service}'
 
-            if not os.path.exists(path):
-                self.__logger.error(
-                    f"[{service}] Mysql Dumps path {path} not found"
-                )
-                return None
-
-            r = re.compile('.*\.sql$')
             print(f"\n[{service}]")
+            if not os.path.exists(path):
+                print(f" - Empity")
+                return None
+            
+            r = re.compile('.*\.tar.gz$')
             for filename in list(filter(r.match, os.listdir(path))):
                 print(f" - {path}/{filename}")
         except Exception as e:

@@ -5,9 +5,9 @@ python3 main.py --config=config.ini -l --only=mongo_dbs
 python3 main.py --config=config.ini -c --only=mongo_dbs
 
 # todo      
-bash command [todo]
+bash command to install [todo]
 create a cronjob [todo]
-gzip [todo]
+
 scp [todo]
 
 check dependencies mysqldump, mongodump, git [done]
@@ -18,6 +18,7 @@ arg --only name service [done]
 arg --list or -l -> --only=api_import [done]
 arg --help or -h print help [done]
 arg --version or -v vesion [done]
+tar.gz [done]
 
 # sudo apt-get install mysql-client
 # crontab

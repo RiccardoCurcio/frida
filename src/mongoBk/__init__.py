@@ -1,7 +1,8 @@
 import os
-import subprocess
+from subprocess import run as runProcess, STDOUT
 from datetime import datetime
 from logging import Logger
+from shutil import rmtree
 
 
 class MongoBk:
@@ -31,14 +32,20 @@ class MongoBk:
     ) -> bool:
         try:
             now = datetime.now()
-            dir_name = now.strftime("%Y-%m-%d_%H:%M:%S")
+            dirName = now.strftime("%Y-%m-%d_%H:%M:%S")
+
+            serviceLog = open(
+                f'{os.getenv("PARENT_PATH")}/logs/{service}_{dirName}.log',
+                'a'
+            )
+            self.__logger.info(f"[{service}] Dump START")
+            serviceLog.write(f"[{service}] Dump START\n")
 
             path = f'{self.__dir_path}/{service}'
 
             if not os.path.exists(path):
                 os.makedirs(path)
 
-            self.__logger.info(f"[{service}] Dump START")
             cmd = [
                 f'mongodump',
                 f'--host={host}',
@@ -46,15 +53,69 @@ class MongoBk:
                 f'--authenticationDatabase={db}',
                 f'--username={user}',
                 f'--password="{password}"',
-                f'--out={path}/{dir_name}'
+                '--forceTableScan',
+                f'--out={path}/{dirName}'
             ]
             with open(
-                f'{os.getenv("PARENT_PATH")}/logs/{service}_{dir_name}.log',
+                f'{os.getenv("PARENT_PATH")}/logs/{service}_{dirName}.log',
                 'a'
             ) as f:
-                subprocess.run(cmd, stderr=f, universal_newlines=True)
-            self.__logger.info(f"[{service}] Dump FINISH -> {path}/{dir_name}")
+                runProcess(cmd, stderr=f)
+
+            self.__logger.info(
+                f"[{service}] Dump {path}/{dirName} COMPLETE"
+            )
+            serviceLog.write(
+                f"[{service}] Dump {path}/{dirName} COMPLETE\n"
+            )
+
+            self.compressorTarGz(service, path, dirName, serviceLog)
+            serviceLog.close()
+
         except Exception as e:
             self.__logger.error(
                 f"[{service}] Dump FAILURE {e}"
             )
+
+    def compressorTarGz(self, service, dirPath, dirName, serviceLog):
+        try:
+            self.__logger.info(
+                f"[{service}] Create archive {dirPath}/{dirName}.tar.gz START"
+            )
+            serviceLog.write(
+                f"[{service}] Create archive {dirPath}/{dirName}.tar.gz START\n"
+            )
+
+            DEVNULL = open(os.devnull, 'wb')
+            cmd = [
+                'tar',
+                '-czvf',
+                f'{dirPath}/{dirName}.tar.gz',
+                '-C',
+                f'{dirPath}',
+                f'{dirName}'
+            ]
+
+            runProcess(
+                cmd,
+                stdout=DEVNULL,
+                stderr=STDOUT,
+                universal_newlines=True
+            )
+            self.__logger.info(
+                f"[{service}] Archive {dirPath}/{dirName}.tar.gz CREATED"
+            )
+            serviceLog.write(
+                f"[{service}] Archive {dirPath}/{dirName}.tar.gz CREATED\n"
+            )
+        finally:
+            DEVNULL.close()
+            rmtree(f'{dirPath}/{dirName}')
+            self.__logger.info(
+                f"[{service}] Archive {dirPath}/{dirName}.tar.gz DELETED"
+            )
+            serviceLog.write(f"[{service}] {dirPath}/{dirName}.sql DELETED\n")
+
+        self.__logger.info(
+            f"[{service}] Archive {dirPath}/{dirName}.tar.gz COMPLETE"
+        )

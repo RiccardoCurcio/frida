@@ -1,8 +1,8 @@
 import sys
 import pathlib
 import os
-import subprocess
 from src.bootstrap import Bootstrap
+from src.dependencies import Dependencies
 from src.backup import Backups
 from src.clear import Clear
 from src.listBk import ListBk
@@ -50,16 +50,7 @@ if __name__ == '__main__':
 
         boot = Bootstrap(config)
         logger = boot.setLogger()
-
-        if subprocess.call(['which', 'mysqldump']) == 0:
-            logger.info('mysqldump found')
-        else:
-            logger.warning('mysqldump missing')
-
-        if subprocess.call(['which', 'mongodump']) == 0:
-            logger.info('mongodump found')
-        else:
-            logger.warning('mongodump missing')
+        Dependencies(logger).check()
 
         main(logger, config)
     except KeyboardInterrupt:

@@ -17,7 +17,7 @@ class Only:
                         f'"{service}" not exsist in {os.getenv("CONFIG_FILE", None)}'
                     )
                     sys.exit(1)
-                logger.info(f'"{service}" found!')
+                logger.info(f'"{service}" found')
         else:
             services = config.sections()
         return services
