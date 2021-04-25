@@ -1,6 +1,6 @@
 # Frida
 
-Create backup from multiple database mongoDB, mysql, mariaDB
+Create backup (tar.gz archive) from multiple database mongoDB, mysql, mariaDB
 
 # Installation
 
@@ -98,7 +98,7 @@ DB_MECHANISM = SCRAM-SHA-256
     $ python3 -m frida -h
 ```
 
-# Create a cronjob with crontab
+# Create a cronjob with crontab [example]
 ```
     @midnight python3 -m frida -b
 ```
