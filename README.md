@@ -7,7 +7,6 @@ python3 main.py --config=config.ini -c --only=mongo_dbs
 # todo      
 bash command to install [todo]
 create a cronjob [todo]
-
 scp [todo]
 
 check dependencies mysqldump, mongodump, git [done]

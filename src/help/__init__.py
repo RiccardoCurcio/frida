@@ -14,15 +14,15 @@ class Help:
                 "python3 main.py --config=config.ini -c --only=mongo_dbs"
             ],
             "flags": [
-                ["-c", "--clear", "Clear old backups"],
-                ["-b", "--backup", "run backup"],
-                ["-l", "--list", "list of backup"],
-                ["-h", "--help", "print this help"],
-                ["-v", "--version", "print version"]
+                ["-c", "--clear     ", "Clear old backups"],
+                ["-b", "--backup    ", "run backup"],
+                ["-l", "--list      ", "list of backup"],
+                ["-h", "--help      ", "print this help"],
+                ["-v", "--version   ", "print version"]
             ],
             "options": [
-                ["--config", "specific ini file"],
-                ["--only", "list of sarvice"],
+                ["--config  ", "specific ini file"],
+                ["--only    ", "list of sarvice"],
             ]
         }
         pass
