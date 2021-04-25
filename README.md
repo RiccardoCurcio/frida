@@ -5,7 +5,7 @@ Create backup from multiple database mongoDB, mysql, mariaDB
 # Installation
 
 ```
-    $ git clone -b <tag or branch> https://github.com/RiccardoCurcio/backup
+    $ git clone -b <tag or branch> https://github.com/RiccardoCurcio/frida
 
     $ pip3 install -r requirements.txt
 
