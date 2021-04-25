@@ -38,7 +38,7 @@ def main(logger, config):
 
 if __name__ == '__main__':
     try:
-        os.environ["PARENT_PATH"] = f'{pathlib.Path(__file__).parent}'
+        os.environ["PARENT_PATH"] = f'{pathlib.Path(__file__).parent.parent}'
         if "--help" in sys.argv or "-h" in sys.argv:
             Help().help()
             sys.exit(0)
