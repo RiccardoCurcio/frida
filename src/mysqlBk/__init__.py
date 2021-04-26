@@ -13,7 +13,7 @@ class MysqlBk:
 
         if not os.path.exists(f'{os.getenv("PARENT_PATH")}/logs'):
             os.makedirs(f'{os.getenv("PARENT_PATH")}/logs')
-        
+
         pass
 
     def run(

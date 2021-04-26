@@ -68,7 +68,6 @@ class ClearMysqlBk:
             r = re.compile(f'^{service}_[\d]{{4}}-[\d]{{2}}-[\d]{{2}}_[\d]{{2}}:[\d]{{2}}:[\d]{{2}}\.log$')
             self.__logger.info(f"[{service}] Mysql log files clear START")
             for filename in list(filter(r.match, os.listdir(path))):
-                print(filename)
                 file_noservice = filename.replace(f"{service}_", "")
                 if datetime.strptime(file_noservice[:-4].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
                     try:
