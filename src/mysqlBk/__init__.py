@@ -1,12 +1,19 @@
 from subprocess import run as runProcess, STDOUT
 import os
 from datetime import datetime
+from src.gateway import Gateway
 
 
 class MysqlBk:
-    def __init__(self, logger, dir: str) -> None:
+    def __init__(
+        self,
+        logger,
+        dir: str,
+        gateway: str = None
+    ) -> None:
         self.__dir_path = dir
         self.__logger = logger
+        self.__gateway = gateway.split(',') if gateway is not None else []
 
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path)
@@ -103,6 +110,10 @@ class MysqlBk:
             serviceLog.write(
                 f"[{service}] Archive {dirPath}/{fileName}.tar.gz CREATED\n"
             )
+            # gateway
+            for gatewayPath in self.__gateway:
+                g = Gateway.get(gatewayPath)
+                g.send(f'{dirPath}/{fileName}.tar.gz')
         finally:
             DEVNULL.close()
             os.remove(f'{dirPath}/{fileName}.sql')

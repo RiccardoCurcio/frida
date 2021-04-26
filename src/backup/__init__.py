@@ -74,7 +74,8 @@ class Backups:
             )
             mysql = MysqlBk(
                 self.__logger,
-                config[service].get('DIR', default_dir)
+                config[service].get('DIR', default_dir),
+                config[service].get('GATEWAY', None)
             )
             mysql.run(
                 service,
@@ -117,7 +118,8 @@ class Backups:
             )
             mongo = MongoBk(
                 self.__logger,
-                config[service].get('DIR', default_dir)
+                config[service].get('DIR', default_dir),
+                config[service].get('GATEWAY', None)
             )
             mongo.run(
                 service,

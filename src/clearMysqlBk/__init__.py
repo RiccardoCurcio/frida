@@ -1,6 +1,7 @@
 import os
 import re
 from datetime import datetime
+from src.gateway import Gateway
 
 
 class ClearMysqlBk:
@@ -8,11 +9,13 @@ class ClearMysqlBk:
         self,
         logger,
         dir: str,
-        date: datetime
+        date: datetime,
+        gateway: str = None
     ) -> None:
         self.__dir_path = dir
         self.__logger = logger
         self.__date = date
+        self.__gateway = gateway.split(',') if gateway is not None else []
 
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path)
@@ -48,6 +51,10 @@ class ClearMysqlBk:
                         self.__logger.info(
                             f"[{service}] delete -> {path}/{filename}"
                         )
+                        # gateway
+                        for gatewayPath in self.__gateway:
+                            g = Gateway.get(gatewayPath)
+                            g.delete(f'{path}/{filename}')
                         count = count + 1
                     except Exception as e:
                         self.__logger.error(

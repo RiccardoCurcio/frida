@@ -3,16 +3,19 @@ from subprocess import run as runProcess, STDOUT
 from datetime import datetime
 from logging import Logger
 from shutil import rmtree
+from src.gateway import Gateway
 
 
 class MongoBk:
     def __init__(
         self,
         logger: Logger,
-        dir: str
+        dir: str,
+        gateway: str = None
     ) -> None:
         self.__dir_path = dir
         self.__logger = logger
+        self.__gateway = gateway.split(',') if gateway is not None else []
 
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path)
@@ -108,6 +111,11 @@ class MongoBk:
             serviceLog.write(
                 f"[{service}] Archive {dirPath}/{dirName}.tar.gz CREATED\n"
             )
+            # gateway
+            for gatewayPath in self.__gateway:
+                g = Gateway.get(gatewayPath)
+                g.send(f'{dirPath}/{dirName}.tar.gz')
+
         finally:
             DEVNULL.close()
             rmtree(f'{dirPath}/{dirName}')

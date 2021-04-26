@@ -2,6 +2,7 @@ import os
 import re
 from datetime import datetime
 from logging import Logger
+from src.gateway import Gateway
 
 
 class ClearMongoBk:
@@ -9,11 +10,13 @@ class ClearMongoBk:
         self,
         logger: Logger,
         dir: str,
-        date: datetime
+        date: datetime,
+        gateway: str = None
     ) -> None:
         self.__dir_path = dir
         self.__logger = logger
         self.__date = date
+        self.__gateway = gateway.split(',') if gateway is not None else []
         pass
 
     def run(
@@ -43,6 +46,10 @@ class ClearMongoBk:
                         self.__logger.info(
                             f"[{service}] Mongo clear archive deleted -> {path}/{archiveName}"
                         )
+                        # gateway
+                        for gatewayPath in self.__gateway:
+                            g = Gateway.get(gatewayPath)
+                            g.delete(f'{path}/{archiveName}')
                         count = count + 1
                     except Exception as e:
                         self.__logger.error(
