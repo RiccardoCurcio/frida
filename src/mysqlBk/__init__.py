@@ -107,7 +107,7 @@ class MysqlBk:
             DEVNULL.close()
             os.remove(f'{dirPath}/{fileName}.sql')
             self.__logger.info(
-                f"[{service}] Archive {dirPath}/{fileName}.tar.gz DELETED"
+                f"[{service}] Archive {dirPath}/{fileName}.sql DELETED"
             )
             serviceLog.write(f"[{service}] {dirPath}/{fileName}.sql DELETED\n")
         self.__logger.info(

@@ -112,9 +112,9 @@ class MongoBk:
             DEVNULL.close()
             rmtree(f'{dirPath}/{dirName}')
             self.__logger.info(
-                f"[{service}] Archive {dirPath}/{dirName}.tar.gz DELETED"
+                f"[{service}] {dirPath}/{dirName} DELETED"
             )
-            serviceLog.write(f"[{service}] {dirPath}/{dirName}.sql DELETED\n")
+            serviceLog.write(f"[{service}] {dirPath}/{dirName} DELETED\n")
 
         self.__logger.info(
             f"[{service}] Archive {dirPath}/{dirName}.tar.gz COMPLETE"
