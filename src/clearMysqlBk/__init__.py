@@ -42,10 +42,10 @@ class ClearMysqlBk:
                 )
                 return None
 
-            r = re.compile('^[\d]{4}-[\d]{2}-[\d]{2}_[\d]{2}:[\d]{2}:[\d]{2}\.tar.gz$')
+            r = re.compile('^[\d]{4}-[\d]{2}-[\d]{2}_[\d]{2}:[\d]{2}:[\d]{2}\.tgz$')
             self.__logger.info(f"[{service}] Mysql Dumps clear START")
             for filename in list(filter(r.match, os.listdir(path))):
-                if datetime.strptime(filename[:-7].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
+                if datetime.strptime(filename[:-4].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
                     try:
                         os.remove(f"{path}/{filename}")
                         self.__logger.info(

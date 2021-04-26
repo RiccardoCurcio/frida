@@ -83,17 +83,17 @@ class MongoBk:
     def compressorTarGz(self, service, dirPath, dirName, serviceLog):
         try:
             self.__logger.info(
-                f"[{service}] Create archive {dirPath}/{dirName}.tar.gz START"
+                f"[{service}] Create archive {dirPath}/{dirName}.tgz START"
             )
             serviceLog.write(
-                f"[{service}] Create archive {dirPath}/{dirName}.tar.gz START\n"
+                f"[{service}] Create archive {dirPath}/{dirName}.tgz START\n"
             )
 
             DEVNULL = open(os.devnull, 'wb')
             cmd = [
                 'tar',
                 '-czvf',
-                f'{dirPath}/{dirName}.tar.gz',
+                f'{dirPath}/{dirName}.tgz',
                 '-C',
                 f'{dirPath}',
                 f'{dirName}'
@@ -106,15 +106,15 @@ class MongoBk:
                 universal_newlines=True
             )
             self.__logger.info(
-                f"[{service}] Archive {dirPath}/{dirName}.tar.gz CREATED"
+                f"[{service}] Archive {dirPath}/{dirName}.tgz CREATED"
             )
             serviceLog.write(
-                f"[{service}] Archive {dirPath}/{dirName}.tar.gz CREATED\n"
+                f"[{service}] Archive {dirPath}/{dirName}.tgz CREATED\n"
             )
             # gateway
             for gatewayPath in self.__gateway:
                 g = Gateway.get(gatewayPath)
-                g.send(f'{dirPath}/{dirName}.tar.gz')
+                g.send(f'{dirPath}/{dirName}.tgz')
 
         finally:
             DEVNULL.close()
@@ -125,5 +125,5 @@ class MongoBk:
             serviceLog.write(f"[{service}] {dirPath}/{dirName} DELETED\n")
 
         self.__logger.info(
-            f"[{service}] Archive {dirPath}/{dirName}.tar.gz COMPLETE"
+            f"[{service}] Archive {dirPath}/{dirName}.tgz COMPLETE"
         )

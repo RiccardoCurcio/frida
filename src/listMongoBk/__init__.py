@@ -28,7 +28,7 @@ class ListMongoBk:
                 print(f" - Empity")
                 return None
 
-            r = re.compile('.*\.tar.gz$')
+            r = re.compile('.*\.tgz$')
             for filename in list(filter(r.match, os.listdir(path))):
                 print(f" - {path}/{filename}")
         except Exception as e:

@@ -84,16 +84,16 @@ class MysqlBk:
     def compressorTarGz(self, service, dirPath, fileName, serviceLog):
         try:
             self.__logger.info(
-                f"[{service}] Create archive {dirPath}/{fileName}.tar.gz START"
+                f"[{service}] Create archive {dirPath}/{fileName}.tgz START"
             )
             serviceLog.write(
-                f"[{service}] Create archive {dirPath}/{fileName}.tar.gz START\n"
+                f"[{service}] Create archive {dirPath}/{fileName}.tgz START\n"
             )
             DEVNULL = open(os.devnull, 'wb')
             cmd = [
                 'tar',
                 '-czvf',
-                f'{dirPath}/{fileName}.tar.gz',
+                f'{dirPath}/{fileName}.tgz',
                 '-C',
                 f'{dirPath}',
                 f'{fileName}.sql'
@@ -105,15 +105,15 @@ class MysqlBk:
                 universal_newlines=True
             )
             self.__logger.info(
-                f"[{service}] Archive {dirPath}/{fileName}.tar.gz CREATED"
+                f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED"
             )
             serviceLog.write(
-                f"[{service}] Archive {dirPath}/{fileName}.tar.gz CREATED\n"
+                f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED\n"
             )
             # gateway
             for gatewayPath in self.__gateway:
                 g = Gateway.get(gatewayPath)
-                g.send(f'{dirPath}/{fileName}.tar.gz')
+                g.send(f'{dirPath}/{fileName}.tgz')
         finally:
             DEVNULL.close()
             os.remove(f'{dirPath}/{fileName}.sql')
@@ -122,5 +122,5 @@ class MysqlBk:
             )
             serviceLog.write(f"[{service}] {dirPath}/{fileName}.sql DELETED\n")
         self.__logger.info(
-            f"[{service}] Archive {dirPath}/{fileName}.tar.gz COMPLETE"
+            f"[{service}] Archive {dirPath}/{fileName}.tgz COMPLETE"
         )
