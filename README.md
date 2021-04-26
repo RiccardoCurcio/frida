@@ -1,6 +1,6 @@
 # Frida
 
-Create backup (tar.gz archive) from multiple database mongoDB, mysql, mariaDB
+Create backup (tgz archive) from multiple database mongoDB, mysql, mariaDB
 
 # Installation
 
@@ -32,6 +32,12 @@ DB_PORT = 3306
 DB_DATABASE = dbname
 DB_USERNAME = username
 DB_PASSWORD = password
+# send archive to external storage
+; GATEWAY = custom.customgateway,s3
+# clear from external storage
+; CLEAR_GATEWAY = false
+# custom clear value 
+; CLEAR = 2
 # default from DEFAULT
 # DIR = /mysql_service_name_1/custom/path/of/folder/backup
 
