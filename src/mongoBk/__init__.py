@@ -112,10 +112,6 @@ class MongoBk:
             serviceLog.write(
                 f"[{service}] Archive {dirPath}/{dirName}.tgz CREATED\n"
             )
-            # gateway
-            # for gatewayPath in self.__gateway:
-            #     g = Gateway.get(gatewayPath)
-            #     g.send(f'{dirPath}/{dirName}.tgz')
 
             locations = [{'location': 'frida', 'key': f'{dirPath}/{dirName}.tgz'}]
             locations = locations + self.__callGateway(

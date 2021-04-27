@@ -35,9 +35,14 @@ class ListMysqlBk:
                 return None
 
             jsonStore = self.__loadJson(path)
+            if len(jsonStore.keys()) == 0:
+                print(f" - Empity")
+                return None
+
             for key in jsonStore.keys():
+                print(f"   {key}")
                 for item in jsonStore[key]:
-                    print(f" - [{item['location']}] {item['key']}")
+                    print(f"    - [{item['location']}] {item['key']}")
 
         except Exception as e:
             self.__logger.error(

@@ -19,12 +19,12 @@ class Clear:
         )
 
         diffTime = config['DEFAULT'].get(
-            'CLEAR',
+            'CLEAR_INTERVAL',
             '365'
         )
 
         for service in services:
-            serviceDiffTime = config[service].get('CLEAR', diffTime)
+            serviceDiffTime = config[service].get('CLEAR_INTERVAL', diffTime)
             date = datetime.now() - timedelta(days=int(serviceDiffTime))
             if config[service].get('TYPE', None) in ['mysql', 'mongo']:
                 if config[service].get('TYPE', None) == 'mysql':

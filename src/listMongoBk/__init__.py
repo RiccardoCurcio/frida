@@ -30,6 +30,9 @@ class ListMongoBk:
                 return None
 
             jsonStore = self.__loadJson(path)
+            if len(jsonStore.keys()) == 0:
+                print(f" - Empity")
+                return None
             for key in jsonStore.keys():
                 for item in jsonStore[key]:
                     print(f" - [{item['location']}] {item['key']}")
