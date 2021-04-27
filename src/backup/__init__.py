@@ -30,6 +30,11 @@ class Backups:
             f'{os.getenv("PARENT_PATH")}/backups'
         )
 
+        default_gateway = config['DEFAULT'].get(
+            'GATEWAY',
+            None
+        )
+
         if not os.path.exists(default_dir):
             os.makedirs(default_dir)
 
@@ -51,7 +56,8 @@ class Backups:
         dbs: DbConnection,
         config: ConfigParser,
         service: str,
-        default_dir: str
+        default_dir: str,
+        default_gateway: str = None
     ):
         """[Run backup mysql service]
 
@@ -75,7 +81,7 @@ class Backups:
             mysql = MysqlBk(
                 self.__logger,
                 config[service].get('DIR', default_dir),
-                config[service].get('GATEWAY', None)
+                config[service].get('GATEWAY', default_gateway)
             )
             mysql.run(
                 service,
@@ -95,7 +101,8 @@ class Backups:
         dbs: DbConnection,
         config: ConfigParser,
         service: str,
-        default_dir: str
+        default_dir: str,
+        default_gateway: str = None
     ):
         """[Run mongo backup]
 
@@ -119,7 +126,7 @@ class Backups:
             mongo = MongoBk(
                 self.__logger,
                 config[service].get('DIR', default_dir),
-                config[service].get('GATEWAY', None)
+                config[service].get('GATEWAY', default_gateway)
             )
             mongo.run(
                 service,

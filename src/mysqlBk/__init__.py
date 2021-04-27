@@ -1,5 +1,6 @@
 from subprocess import run as runProcess, STDOUT
 import os
+import json
 from datetime import datetime
 from src.gateway import Gateway
 
@@ -111,9 +112,15 @@ class MysqlBk:
                 f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED\n"
             )
             # gateway
-            for gatewayPath in self.__gateway:
-                g = Gateway.get(gatewayPath)
-                g.send(f'{dirPath}/{fileName}.tgz')
+            # for gatewayPath in self.__gateway:
+            #     g = Gateway.get(gatewayPath)
+            #     g.send(f'{dirPath}/{fileName}.tgz')
+            locations = [{'location': 'frida', 'key': f'{dirPath}/{fileName}.tgz'}]
+            locations = locations + self.__callGateway(
+                dirPath,
+                fileName
+            )
+            self.__updateJsonStore(locations, dirPath, fileName)
         finally:
             DEVNULL.close()
             os.remove(f'{dirPath}/{fileName}.sql')
@@ -124,3 +131,24 @@ class MysqlBk:
         self.__logger.info(
             f"[{service}] Archive {dirPath}/{fileName}.tgz COMPLETE"
         )
+
+    def __callGateway(self, dirPath: str, fileName: str) -> list:
+        locations = []
+        for gatewayPath in self.__gateway:
+            g = Gateway.get(gatewayPath)
+            key = g.send(f'{dirPath}/{fileName}.tgz')
+            locations.append({'location': gatewayPath, 'key': key})
+        return locations
+
+    def __updateJsonStore(self, locations: list, dirPath: str, fileName: str) -> None:
+        jsonStore = {}
+        if os.path.exists(f'{dirPath}/.jsonStore.json'):
+            with open(f'{dirPath}/.jsonStore.json', 'r') as f:
+                jsonStore = json.load(f)
+
+        with open(f'{dirPath}/.jsonStore.json', 'w') as f:
+            jsonItem = {
+                f"{fileName}": locations
+            }
+            jsonStore.update(jsonItem)
+            json.dump(jsonStore, f)

@@ -7,7 +7,7 @@ class GatewayABC(ABC):
         pass
 
     @abstractmethod
-    def send(self):
+    def send(self) -> str:
         pass
 
     @abstractmethod

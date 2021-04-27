@@ -1,4 +1,5 @@
 import os
+import json
 from subprocess import run as runProcess, STDOUT
 from datetime import datetime
 from logging import Logger
@@ -112,9 +113,16 @@ class MongoBk:
                 f"[{service}] Archive {dirPath}/{dirName}.tgz CREATED\n"
             )
             # gateway
-            for gatewayPath in self.__gateway:
-                g = Gateway.get(gatewayPath)
-                g.send(f'{dirPath}/{dirName}.tgz')
+            # for gatewayPath in self.__gateway:
+            #     g = Gateway.get(gatewayPath)
+            #     g.send(f'{dirPath}/{dirName}.tgz')
+
+            locations = [{'location': 'frida', 'key': f'{dirPath}/{dirName}.tgz'}]
+            locations = locations + self.__callGateway(
+                dirPath,
+                dirName
+            )
+            self.__updateJsonStore(locations, dirPath, dirName)
 
         finally:
             DEVNULL.close()
@@ -127,3 +135,24 @@ class MongoBk:
         self.__logger.info(
             f"[{service}] Archive {dirPath}/{dirName}.tgz COMPLETE"
         )
+
+    def __callGateway(self, dirPath: str, fileName: str) -> list:
+        locations = []
+        for gatewayPath in self.__gateway:
+            g = Gateway.get(gatewayPath)
+            key = g.send(f'{dirPath}/{fileName}.tgz')
+            locations.append({'location': gatewayPath, 'key': key})
+        return locations
+
+    def __updateJsonStore(self, locations: list, dirPath: str, fileName: str) -> None:
+        jsonStore = {}
+        if os.path.exists(f'{dirPath}/.jsonStore.json'):
+            with open(f'{dirPath}/.jsonStore.json', 'r') as f:
+                jsonStore = json.load(f)
+
+        with open(f'{dirPath}/.jsonStore.json', 'w') as f:
+            jsonItem = {
+                f"{fileName}": locations
+            }
+            jsonStore.update(jsonItem)
+            json.dump(jsonStore, f)
