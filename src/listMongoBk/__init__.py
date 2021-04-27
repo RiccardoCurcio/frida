@@ -1,4 +1,5 @@
 import os
+import json
 import re
 from logging import Logger
 
@@ -28,10 +29,18 @@ class ListMongoBk:
                 print(f" - Empity")
                 return None
 
-            r = re.compile('.*\.tgz$')
-            for filename in list(filter(r.match, os.listdir(path))):
-                print(f" - {path}/{filename}")
+            jsonStore = self.__loadJson(path)
+            for key in jsonStore.keys():
+                for item in jsonStore[key]:
+                    print(f" - [{item['location']}] {item['key']}")
         except Exception as e:
             self.__logger.error(
                 f"[{service}] Mongo  FAILURE {e}"
             )
+
+    def __loadJson(self, dirPath: str) -> dict:
+        jsonStore = {}
+        if os.path.exists(f'{dirPath}/.jsonStore.json'):
+            with open(f'{dirPath}/.jsonStore.json', 'r') as f:
+                jsonStore = json.load(f)
+        return jsonStore
