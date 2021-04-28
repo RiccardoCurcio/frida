@@ -1,16 +1,16 @@
 import os
 from configparser import ConfigParser
-from src.listMysqlBk import ListMysqlBk
-from src.listMongoBk import ListMongoBk
+from src.list.mysql import Mysql
+from src.list.mongo import Mongo
 
 
-class ListBk:
+class List:
 
     def __init__(self, logger):
         self.__logger = logger
         pass
 
-    def run(self, config: ConfigParser, services: list):
+    def run(self, config: ConfigParser, services: list) -> None:
         default_dir = config['DEFAULT'].get(
             'DIR',
             f'{os.getenv("PARENT_PATH")}/backups'
@@ -19,14 +19,14 @@ class ListBk:
         for service in services:
             if config[service].get('TYPE', None) in ['mysql', 'mongo']:
                 if config[service].get('TYPE', None) == 'mysql':
-                    listBk = ListMysqlBk(
+                    listMysql = Mysql(
                         self.__logger,
                         config[service].get('DIR', default_dir)
                     )
-                    listBk.run(service)
+                    listMysql.run(service)
                 if config[service].get('TYPE', None) == 'mongo':
-                    listBk = ListMongoBk(
+                    listMongo = Mongo(
                         self.__logger,
                         config[service].get('DIR', default_dir)
                     )
-                    listBk.run(service)
+                    listMongo.run(service)

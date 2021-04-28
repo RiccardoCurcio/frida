@@ -1,6 +1,6 @@
 import os
-from src.mysqlBk import MysqlBk
-from src.mongoBk import MongoBk
+from src.backup.mysql import Mysql
+from src.backup.mongo import Mongo
 from src.database import DbConnection
 from configparser import ConfigParser
 from logging import Logger
@@ -30,6 +30,11 @@ class Backups:
             f'{os.getenv("PARENT_PATH")}/backups'
         )
 
+        default_gateway = config['DEFAULT'].get(
+            'GATEWAY',
+            None
+        )
+
         if not os.path.exists(default_dir):
             os.makedirs(default_dir)
 
@@ -51,7 +56,8 @@ class Backups:
         dbs: DbConnection,
         config: ConfigParser,
         service: str,
-        default_dir: str
+        default_dir: str,
+        default_gateway: str = None
     ):
         """[Run backup mysql service]
 
@@ -72,9 +78,10 @@ class Backups:
             self.__logger.info(
                 f'[{service}] Mysql connection SUCCESS'
             )
-            mysql = MysqlBk(
+            mysql = Mysql(
                 self.__logger,
-                config[service].get('DIR', default_dir)
+                config[service].get('DIR', default_dir),
+                config[service].get('GATEWAY', default_gateway)
             )
             mysql.run(
                 service,
@@ -94,7 +101,8 @@ class Backups:
         dbs: DbConnection,
         config: ConfigParser,
         service: str,
-        default_dir: str
+        default_dir: str,
+        default_gateway: str = None
     ):
         """[Run mongo backup]
 
@@ -115,9 +123,10 @@ class Backups:
             self.__logger.info(
                 f'[{service}] Mongo connection SUCCESS'
             )
-            mongo = MongoBk(
+            mongo = Mongo(
                 self.__logger,
-                config[service].get('DIR', default_dir)
+                config[service].get('DIR', default_dir),
+                config[service].get('GATEWAY', default_gateway)
             )
             mongo.run(
                 service,
@@ -125,7 +134,8 @@ class Backups:
                 config[service].get('DB_PORT', None),
                 config[service].get('DB_DATABASE', None),
                 config[service].get('DB_USERNAME', None),
-                config[service].get('DB_PASSWORD', None)
+                config[service].get('DB_PASSWORD', None),
+                config[service].get('DB_MECHANISM', 'SCRAM-SHA-256')
             )
         else:
             self.__logger.info(

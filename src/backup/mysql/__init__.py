@@ -1,19 +1,27 @@
 from subprocess import run as runProcess, STDOUT
 import os
+import json
 from datetime import datetime
+from src.gateway import Gateway
 
 
-class MysqlBk:
-    def __init__(self, logger, dir: str) -> None:
+class Mysql:
+    def __init__(
+        self,
+        logger,
+        dir: str,
+        gateway: str = None
+    ) -> None:
         self.__dir_path = dir
         self.__logger = logger
+        self.__gateway = gateway.split(',') if gateway is not None else []
 
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path)
 
         if not os.path.exists(f'{os.getenv("PARENT_PATH")}/logs'):
             os.makedirs(f'{os.getenv("PARENT_PATH")}/logs')
-        
+
         pass
 
     def run(
@@ -77,16 +85,16 @@ class MysqlBk:
     def compressorTarGz(self, service, dirPath, fileName, serviceLog):
         try:
             self.__logger.info(
-                f"[{service}] Create archive {dirPath}/{fileName}.tar.gz START"
+                f"[{service}] Create archive {dirPath}/{fileName}.tgz START"
             )
             serviceLog.write(
-                f"[{service}] Create archive {dirPath}/{fileName}.tar.gz START\n"
+                f"[{service}] Create archive {dirPath}/{fileName}.tgz START\n"
             )
             DEVNULL = open(os.devnull, 'wb')
             cmd = [
                 'tar',
                 '-czvf',
-                f'{dirPath}/{fileName}.tar.gz',
+                f'{dirPath}/{fileName}.tgz',
                 '-C',
                 f'{dirPath}',
                 f'{fileName}.sql'
@@ -98,18 +106,46 @@ class MysqlBk:
                 universal_newlines=True
             )
             self.__logger.info(
-                f"[{service}] Archive {dirPath}/{fileName}.tar.gz CREATED"
+                f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED"
             )
             serviceLog.write(
-                f"[{service}] Archive {dirPath}/{fileName}.tar.gz CREATED\n"
+                f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED\n"
             )
+            
+            locations = [{'location': 'frida', 'key': f'{dirPath}/{fileName}.tgz'}]
+            locations = locations + self.__callGateway(
+                dirPath,
+                fileName
+            )
+            self.__updateJsonStore(locations, dirPath, fileName)
         finally:
             DEVNULL.close()
             os.remove(f'{dirPath}/{fileName}.sql')
             self.__logger.info(
-                f"[{service}] Archive {dirPath}/{fileName}.tar.gz DELETED"
+                f"[{service}] Archive {dirPath}/{fileName}.sql DELETED"
             )
             serviceLog.write(f"[{service}] {dirPath}/{fileName}.sql DELETED\n")
         self.__logger.info(
-            f"[{service}] Archive {dirPath}/{fileName}.tar.gz COMPLETE"
+            f"[{service}] Archive {dirPath}/{fileName}.tgz COMPLETE"
         )
+
+    def __callGateway(self, dirPath: str, fileName: str) -> list:
+        locations = []
+        for gatewayPath in self.__gateway:
+            g = Gateway.get(gatewayPath, self.__logger)
+            key = g.send(f'{dirPath}/{fileName}.tgz')
+            locations.append({'location': gatewayPath, 'key': key})
+        return locations
+
+    def __updateJsonStore(self, locations: list, dirPath: str, fileName: str) -> None:
+        jsonStore = {}
+        if os.path.exists(f'{dirPath}/.jsonStore.json'):
+            with open(f'{dirPath}/.jsonStore.json', 'r') as f:
+                jsonStore = json.load(f)
+
+        with open(f'{dirPath}/.jsonStore.json', 'w') as f:
+            jsonItem = {
+                f"{fileName}": locations
+            }
+            jsonStore.update(jsonItem)
+            json.dump(jsonStore, f)

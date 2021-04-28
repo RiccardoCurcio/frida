@@ -1,9 +1,9 @@
 import os
-import re
+import json
 from logging import Logger
 
 
-class ListMongoBk:
+class Mongo:
     def __init__(
         self,
         logger: Logger,
@@ -28,10 +28,22 @@ class ListMongoBk:
                 print(f" - Empity")
                 return None
 
-            r = re.compile('.*\.tar.gz$')
-            for filename in list(filter(r.match, os.listdir(path))):
-                print(f" - {path}/{filename}")
+            jsonStore = self.__loadJson(path)
+            if len(jsonStore.keys()) == 0:
+                print(f" - Empity")
+                return None
+            for key in jsonStore.keys():
+                print(f"   {key}")
+                for item in jsonStore[key]:
+                    print(f"    - [{item['location']}] {item['key']}")
         except Exception as e:
             self.__logger.error(
                 f"[{service}] Mongo  FAILURE {e}"
             )
+
+    def __loadJson(self, dirPath: str) -> dict:
+        jsonStore = {}
+        if os.path.exists(f'{dirPath}/.jsonStore.json'):
+            with open(f'{dirPath}/.jsonStore.json', 'r') as f:
+                jsonStore = json.load(f)
+        return jsonStore
