@@ -28,7 +28,7 @@ class Clear:
             date = datetime.now() - timedelta(days=int(serviceDiffTime))
             if config[service].get('TYPE', None) in ['mysql', 'mongo']:
                 if config[service].get('TYPE', None) == 'mysql':
-                    clear = Mysql (
+                    clear = Mysql(
                         self.__logger,
                         config[service].get('DIR', default_dir),
                         date,
