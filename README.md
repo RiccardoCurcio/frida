@@ -21,7 +21,7 @@ Frida need a config file
 # default level INFO
 LOGGING_LEVEL = DEBUG
 # days (default 365)
-CLEAR = 365
+CLEAR_INTERVAL = 365
 # dir default ./backups
 # DIR = /custom/path/of/folder/backup
 
@@ -37,7 +37,7 @@ DB_PASSWORD = password
 # clear from external storage
 ; CLEAR_GATEWAY = false
 # custom clear value 
-; CLEAR = 2
+; CLEAR_INTERVAL = 2
 # default from DEFAULT
 # DIR = /mysql_service_name_1/custom/path/of/folder/backup
 
@@ -103,8 +103,77 @@ DB_MECHANISM = SCRAM-SHA-256
     // Print help
     $ python3 -m frida -h
 ```
+# Create Custom gateway
+```
+    // create new directory in gateways/custom
+    $ cd gateways/custom && mkdir custom_gateway
+
+    // create file __init__.py
+    $ cd custom_gateway && touch __init__.py
+```
+
+Copy this code
+
+```python
+from gateways.GatewayABC import GatewayABC
+import os
+import requests
+from requests_toolbelt.multipart.encoder import MultipartEncoder
+from dotenv import load_dotenv, find_dotenv
+
+
+class CustomGateway(GatewayABC):
+    def __init__(self, logger):
+        self.__logger = logger
+
+    def send(self, archivePath) -> str:
+        key = "custom_key"
+        try:
+            self.__logger.info(f"Custom gateway send")
+        except Exception as e:
+            self.__logger.error(f"Custom gateway send error {e}")
+        return key
+
+    def delete(self, key):
+        key = "custom_key"
+        try:
+            self.__logger.info(f"Custom gateway delete")
+        except Exception as e:
+            self.__logger.error(f"Custom gateway delete error {e}")
+        pass
+
+```
+
+if your custom gateway has new requirements.txt file
+
+```
+    $ pip3 install -r gateways/custom/custom_gateway/requirements.txt
+``` 
+
+Enable gateway in service session
+
+```ini
+[mysql_service_name_1]
+TYPE = mysql
+DB_HOST = 127.0.0.1
+DB_PORT = 3306
+DB_DATABASE = dbname
+DB_USERNAME = username
+DB_PASSWORD = password
+# send archive to external storage
+GATEWAY = custom.custom_gateway,s3
+# clear from external storage
+CLEAR_GATEWAY = true
+# custom clear value 
+CLEAR_INTERVAL = 2
+# default from DEFAULT
+# DIR = /mysql_service_name_1/custom/path/of/folder/backup
+```
+
 
 # Create a cronjob with crontab [example]
 ```
-    @midnight python3 -m frida -b
+    @midnight python3 -m /path/of/frida -b
 ```
+
+    If you're wondering, Frida is my dog's name
