@@ -134,7 +134,8 @@ class Backups:
                 config[service].get('DB_PORT', None),
                 config[service].get('DB_DATABASE', None),
                 config[service].get('DB_USERNAME', None),
-                config[service].get('DB_PASSWORD', None)
+                config[service].get('DB_PASSWORD', None),
+                config[service].get('DB_MECHANISM', 'SCRAM-SHA-256')
             )
         else:
             self.__logger.info(

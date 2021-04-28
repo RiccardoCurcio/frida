@@ -32,7 +32,8 @@ class Mongo:
         port: str,
         db: str,
         user: str,
-        password: str
+        password: str,
+        mechanism: str
     ) -> bool:
         try:
             now = datetime.now()
@@ -57,6 +58,7 @@ class Mongo:
                 f'--authenticationDatabase={db}',
                 f'--username={user}',
                 f'--password="{password}"',
+                f"--authenticationMechanism={mechanism}",
                 '--forceTableScan',
                 f'--out={path}/{dirName}'
             ]
