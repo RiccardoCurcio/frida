@@ -33,8 +33,9 @@ class Mongo:
                 print(f" - Empity")
                 return None
             for key in jsonStore.keys():
+                print(f"   {key}")
                 for item in jsonStore[key]:
-                    print(f" - [{item['location']}] {item['key']}")
+                    print(f"    - [{item['location']}] {item['key']}")
         except Exception as e:
             self.__logger.error(
                 f"[{service}] Mongo  FAILURE {e}"
