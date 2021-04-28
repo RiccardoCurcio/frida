@@ -6,7 +6,7 @@ from logging import Logger
 from src.gateway import Gateway
 
 
-class ClearMongoBk:
+class Mongo:
     def __init__(
         self,
         logger: Logger,
@@ -44,7 +44,6 @@ class ClearMongoBk:
                     try:
                         updatedArhive.update({key: []})
                         for location in dictArchives[key]:
-                           
                             if location['location'] == 'frida':
                                 os.remove(f'{location["key"]}')
                                 self.__logger.info(

@@ -5,7 +5,7 @@ from src.bootstrap import Bootstrap
 from src.dependencies import Dependencies
 from src.backup import Backups
 from src.clear import Clear
-from src.listBk import ListBk
+from src.list import List
 from src.database import DbConnection
 from src.help import Help
 from src.config import Config
@@ -15,7 +15,7 @@ from src.only import Only
 def main(logger, config):
     dbs = DbConnection(logger)
     if "--list" in sys.argv or "-l" in sys.argv:
-        listBk = ListBk(logger)
+        listBk = List(logger)
         listBk.run(
             config,
             Only.getOnlyService(sys.argv, logger, config)

@@ -1,6 +1,6 @@
 import os
-from src.mysqlBk import MysqlBk
-from src.mongoBk import MongoBk
+from src.backup.mysql import Mysql
+from src.backup.mongo import Mongo
 from src.database import DbConnection
 from configparser import ConfigParser
 from logging import Logger
@@ -78,7 +78,7 @@ class Backups:
             self.__logger.info(
                 f'[{service}] Mysql connection SUCCESS'
             )
-            mysql = MysqlBk(
+            mysql = Mysql(
                 self.__logger,
                 config[service].get('DIR', default_dir),
                 config[service].get('GATEWAY', default_gateway)
@@ -123,7 +123,7 @@ class Backups:
             self.__logger.info(
                 f'[{service}] Mongo connection SUCCESS'
             )
-            mongo = MongoBk(
+            mongo = Mongo(
                 self.__logger,
                 config[service].get('DIR', default_dir),
                 config[service].get('GATEWAY', default_gateway)

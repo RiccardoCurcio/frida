@@ -2,8 +2,8 @@ import os
 import re
 from datetime import datetime, timedelta
 from configparser import ConfigParser
-from src.clearMysqlBk import ClearMysqlBk
-from src.clearMongoBk import ClearMongoBk
+from src.clear.mysql import Mysql
+from src.clear.mongo import Mongo
 
 
 class Clear:
@@ -28,7 +28,7 @@ class Clear:
             date = datetime.now() - timedelta(days=int(serviceDiffTime))
             if config[service].get('TYPE', None) in ['mysql', 'mongo']:
                 if config[service].get('TYPE', None) == 'mysql':
-                    clear = ClearMysqlBk(
+                    clear = Mysql (
                         self.__logger,
                         config[service].get('DIR', default_dir),
                         date,
@@ -36,7 +36,7 @@ class Clear:
                     )
                     clear.run(service)
                 if config[service].get('TYPE', None) == 'mongo':
-                    clear = ClearMongoBk(
+                    clear = Mongo(
                         self.__logger,
                         config[service].get('DIR', default_dir),
                         date,

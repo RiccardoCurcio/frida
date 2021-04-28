@@ -1,26 +1,30 @@
 import os
 import json
-import re
-from logging import Logger
 
 
-class ListMongoBk:
+class Mysql:
     def __init__(
         self,
-        logger: Logger,
+        logger,
         dir: str
     ) -> None:
         self.__dir_path = dir
         self.__logger = logger
+
+        if not os.path.exists(self.__dir_path):
+            os.makedirs(self.__dir_path)
+
+        if not os.path.exists(f'{os.getenv("PARENT_PATH")}/logs'):
+            os.makedirs(f'{os.getenv("PARENT_PATH")}/logs')
         pass
 
     def run(
         self,
         service: str
     ) -> None:
-        self.__listDirs(service)
+        self.__listFiles(service)
 
-    def __listDirs(self, service: str) -> None:
+    def __listFiles(self, service: str) -> None:
         try:
             path = f'{self.__dir_path}/{service}'
 
@@ -33,12 +37,15 @@ class ListMongoBk:
             if len(jsonStore.keys()) == 0:
                 print(f" - Empity")
                 return None
+
             for key in jsonStore.keys():
+                print(f"   {key}")
                 for item in jsonStore[key]:
-                    print(f" - [{item['location']}] {item['key']}")
+                    print(f"    - [{item['location']}] {item['key']}")
+
         except Exception as e:
             self.__logger.error(
-                f"[{service}] Mongo  FAILURE {e}"
+                f"[{service}] Mysql Dumps list error: {e}"
             )
 
     def __loadJson(self, dirPath: str) -> dict:

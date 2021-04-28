@@ -1,14 +1,16 @@
-from subprocess import run as runProcess, STDOUT
 import os
 import json
+from subprocess import run as runProcess, STDOUT
 from datetime import datetime
+from logging import Logger
+from shutil import rmtree
 from src.gateway import Gateway
 
 
-class MysqlBk:
+class Mongo:
     def __init__(
         self,
-        logger,
+        logger: Logger,
         dir: str,
         gateway: str = None
     ) -> None:
@@ -21,7 +23,6 @@ class MysqlBk:
 
         if not os.path.exists(f'{os.getenv("PARENT_PATH")}/logs'):
             os.makedirs(f'{os.getenv("PARENT_PATH")}/logs')
-
         pass
 
     def run(
@@ -35,70 +36,70 @@ class MysqlBk:
     ) -> bool:
         try:
             now = datetime.now()
-            fileName = now.strftime("%Y-%m-%d_%H:%M:%S")
+            dirName = now.strftime("%Y-%m-%d_%H:%M:%S")
 
             serviceLog = open(
-                f'{os.getenv("PARENT_PATH")}/logs/{service}_{fileName}.log',
+                f'{os.getenv("PARENT_PATH")}/logs/{service}_{dirName}.log',
                 'a'
             )
+            self.__logger.info(f"[{service}] Dump START")
+            serviceLog.write(f"[{service}] Dump START\n")
 
             path = f'{self.__dir_path}/{service}'
 
             if not os.path.exists(path):
                 os.makedirs(path)
 
-            self.__logger.info(f"[{service}] Dump START")
-            serviceLog.write(f"[{service}] Dump START\n")
-
             cmd = [
-                f'mysqldump',
-                f'-h{host}',
-                f'-P{port}',
-                f'-u{user}',
-                f'-p{password}',
-                f'{db}'
+                f'mongodump',
+                f'--host={host}',
+                f'--port={port}',
+                f'--authenticationDatabase={db}',
+                f'--username={user}',
+                f'--password="{password}"',
+                '--forceTableScan',
+                f'--out={path}/{dirName}'
             ]
-
             with open(
-                f'{os.getenv("PARENT_PATH")}/logs/{service}_{fileName}.log',
+                f'{os.getenv("PARENT_PATH")}/logs/{service}_{dirName}.log',
                 'a'
             ) as f:
-                runProcess(
-                    cmd,
-                    stderr=f,
-                    stdout=open(f'{path}/{fileName}.sql', 'w'),
-                    universal_newlines=True
-                )
+                runProcess(cmd, stderr=f)
+
             self.__logger.info(
-                f"[{service}] Dump {path}/{fileName}.sql COMPLETE"
+                f"[{service}] Dump {path}/{dirName} COMPLETE"
             )
             serviceLog.write(
-                f"[{service}] Dump {path}/{fileName}.sql COMPLETE\n"
+                f"[{service}] Dump {path}/{dirName} COMPLETE\n"
             )
-            self.compressorTarGz(service, path, fileName, serviceLog)
+
+            self.compressorTarGz(service, path, dirName, serviceLog)
             serviceLog.close()
+
         except Exception as e:
             self.__logger.error(
                 f"[{service}] Dump FAILURE {e}"
             )
 
-    def compressorTarGz(self, service, dirPath, fileName, serviceLog):
+    def compressorTarGz(self, service, dirPath, dirName, serviceLog):
         try:
             self.__logger.info(
-                f"[{service}] Create archive {dirPath}/{fileName}.tgz START"
+                f"[{service}] Create archive {dirPath}/{dirName}.tgz START"
             )
             serviceLog.write(
-                f"[{service}] Create archive {dirPath}/{fileName}.tgz START\n"
+                f"[{service}] Create archive {dirPath}/{dirName}.tgz START\n"
             )
+
             DEVNULL = open(os.devnull, 'wb')
             cmd = [
                 'tar',
                 '-czvf',
-                f'{dirPath}/{fileName}.tgz',
+                f'{dirPath}/{dirName}.tgz',
                 '-C',
                 f'{dirPath}',
-                f'{fileName}.sql'
+                f'{dirName}'
             ]
+
             runProcess(
                 cmd,
                 stdout=DEVNULL,
@@ -106,30 +107,29 @@ class MysqlBk:
                 universal_newlines=True
             )
             self.__logger.info(
-                f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED"
+                f"[{service}] Archive {dirPath}/{dirName}.tgz CREATED"
             )
             serviceLog.write(
-                f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED\n"
+                f"[{service}] Archive {dirPath}/{dirName}.tgz CREATED\n"
             )
-            # gateway
-            # for gatewayPath in self.__gateway:
-            #     g = Gateway.get(gatewayPath)
-            #     g.send(f'{dirPath}/{fileName}.tgz')
-            locations = [{'location': 'frida', 'key': f'{dirPath}/{fileName}.tgz'}]
+
+            locations = [{'location': 'frida', 'key': f'{dirPath}/{dirName}.tgz'}]
             locations = locations + self.__callGateway(
                 dirPath,
-                fileName
+                dirName
             )
-            self.__updateJsonStore(locations, dirPath, fileName)
+            self.__updateJsonStore(locations, dirPath, dirName)
+
         finally:
             DEVNULL.close()
-            os.remove(f'{dirPath}/{fileName}.sql')
+            rmtree(f'{dirPath}/{dirName}')
             self.__logger.info(
-                f"[{service}] Archive {dirPath}/{fileName}.sql DELETED"
+                f"[{service}] {dirPath}/{dirName} DELETED"
             )
-            serviceLog.write(f"[{service}] {dirPath}/{fileName}.sql DELETED\n")
+            serviceLog.write(f"[{service}] {dirPath}/{dirName} DELETED\n")
+
         self.__logger.info(
-            f"[{service}] Archive {dirPath}/{fileName}.tgz COMPLETE"
+            f"[{service}] Archive {dirPath}/{dirName}.tgz COMPLETE"
         )
 
     def __callGateway(self, dirPath: str, fileName: str) -> list:
