@@ -137,7 +137,7 @@ class Mongo:
     def __callGateway(self, dirPath: str, fileName: str) -> list:
         locations = []
         for gatewayPath in self.__gateway:
-            g = Gateway.get(gatewayPath)
+            g = Gateway.get(gatewayPath, self.__logger)
             key = g.send(f'{dirPath}/{fileName}.tgz')
             locations.append({'location': gatewayPath, 'key': key})
         return locations

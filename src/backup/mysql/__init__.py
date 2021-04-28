@@ -111,10 +111,7 @@ class Mysql:
             serviceLog.write(
                 f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED\n"
             )
-            # gateway
-            # for gatewayPath in self.__gateway:
-            #     g = Gateway.get(gatewayPath)
-            #     g.send(f'{dirPath}/{fileName}.tgz')
+            
             locations = [{'location': 'frida', 'key': f'{dirPath}/{fileName}.tgz'}]
             locations = locations + self.__callGateway(
                 dirPath,
@@ -135,7 +132,7 @@ class Mysql:
     def __callGateway(self, dirPath: str, fileName: str) -> list:
         locations = []
         for gatewayPath in self.__gateway:
-            g = Gateway.get(gatewayPath)
+            g = Gateway.get(gatewayPath, self.__logger)
             key = g.send(f'{dirPath}/{fileName}.tgz')
             locations.append({'location': gatewayPath, 'key': key})
         return locations

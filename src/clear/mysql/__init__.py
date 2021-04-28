@@ -62,7 +62,7 @@ class Mysql:
                                 if location['location'] in self.__gateway:
                                     for gatewayPath in self.__gateway:
                                         if gatewayPath == location['location']:
-                                            g = Gateway.get(location['location'])
+                                            g = Gateway.get(location['location'], self.__logger)
                                             g.delete(location['key'])
                                             self.__logger.info(
                                                 f"[{service}] Mongo clear archive from gateway {location['location']} deleted -> {location['key']}"

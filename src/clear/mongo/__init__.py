@@ -54,8 +54,7 @@ class Mongo:
                                 if location['location'] in self.__gateway:
                                     for gatewayPath in self.__gateway:
                                         if gatewayPath == location['location']:
-                                            print(location['location'], location['key'])
-                                            g = Gateway.get(location['location'])
+                                            g = Gateway.get(location['location'], self.__logger)
                                             g.delete(location['key'])
                                 else:
                                     updatedArhive[key].append(location)
