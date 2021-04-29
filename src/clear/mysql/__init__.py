@@ -57,20 +57,29 @@ class Mysql:
                                     self.__logger.info(
                                         f"[{service}] Mongo clear archive deleted -> {location['key']}"
                                     )
+                                    count = count + 1
+                                else:
+                                    updatedArhive[key].append(location)
                             else:
                                 # gateway
                                 if location['location'] in self.__gateway:
                                     for gatewayPath in self.__gateway:
                                         if gatewayPath != 'local':
                                             if gatewayPath == location['location']:
-                                                g = Gateway.get(location['location'], self.__logger)
-                                                g.delete(location['key'])
-                                                self.__logger.info(
-                                                    f"[{service}] Mongo clear archive from gateway {location['location']} deleted -> {location['key']}"
-                                                )
+                                                try:
+                                                    g = Gateway.get(location['location'], self.__logger)
+                                                    g.delete(location['key'])
+                                                    self.__logger.info(
+                                                        f"[{service}] Mongo clear archive from gateway {location['location']} deleted -> {location['key']}"
+                                                    )
+                                                    
+                                                    count = count + 1
+                                                except Exception as e:
+                                                    self.__logger.error(f"Call gateway error {e}")
+                                                    updatedArhive[key].append(location)
                                 else:
                                     updatedArhive[key].append(location)
-                            count = count + 1
+                            # count = count + 1
                     except Exception as e:
                         self.__logger.error(
                             f"[{service}] Mongo archive delete -> {key} error: {e}"
