@@ -6,12 +6,25 @@ class Help:
 
     def __init__(self):
         self.__version = None
+
         try:
             local_repo = git.Repo(path=os.getenv('PARENT_PATH'))
-        finally:
+            tags = sorted(
+                local_repo.tags,
+                key=lambda t: t.commit.committed_datetime
+            )
+            self.__version = tags[-1]
+        except Exception:
+            pass
+
+        try:
+            local_repo = git.Repo(path=os.getenv('PARENT_PATH'))
             self.__version = local_repo.active_branch.name
+        except Exception:
+            pass
+
         self.__name = "Frida"
-        
+
         self.__help = {
             "usage": "python3 -m frida [FLAGS] [OPTIONS]",
             "examples": [
