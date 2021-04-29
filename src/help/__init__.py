@@ -5,9 +5,13 @@ import os
 class Help:
 
     def __init__(self):
-        local_repo = git.Repo(path=os.getenv('PARENT_PATH'))
-        self.__name = "Backup"
-        self.__version = local_repo.active_branch.name
+        self.__version = None
+        try:
+            local_repo = git.Repo(path=os.getenv('PARENT_PATH'))
+        finally:
+            self.__version = local_repo.active_branch.name
+        self.__name = "Frida"
+        
         self.__help = {
             "usage": "python3 -m frida [FLAGS] [OPTIONS]",
             "examples": [
