@@ -1,17 +1,29 @@
+import git
+import os
+
+
 class Help:
 
     def __init__(self):
-        self.__name = "Backup"
-        self.__version = "develop"
+        self.__version = None
+        try:
+            local_repo = git.Repo(path=os.getenv('PARENT_PATH'))
+        finally:
+            self.__version = local_repo.active_branch.name
+        self.__name = "Frida"
+        
         self.__help = {
-            "usage": "python3 main.py [FLAGS] [OPTIONS]",
+            "usage": "python3 -m frida [FLAGS] [OPTIONS]",
             "examples": [
-                "python3 main.py -b",
-                "python3 main.py -b -c",
-                "python3 main.py -l",
-                "python3 main.py --config=config.ini -b --only=mysql_import",
-                "python3 main.py --config=config.ini -l --only=mongo_dbs",
-                "python3 main.py --config=config.ini -c --only=mongo_dbs"
+                "python3 -m frida -b",
+                "python3 -m frida -b -c",
+                "python3 -m frida -l",
+                "python3 -m frida --config=config.ini -b --service=mysql_db",
+                "python3 -m frida --config=config.ini -l --service=mongo_db",
+                "python3 -m frida --config=config.ini -c --service=mongo_db,mysql_db",
+                "python3 -m frida --config=config.ini -c --service=mongo_db,mysql_db --clear-interval=NOW",
+                "python3 -m frida -c --service=mysql_service_name_2 --gateway=local --clear-gateway-except=custom.customgateway",
+                "python3 -m frida -c --service=mysql_service_name_2 --clear-gateway-except"
             ],
             "flags": [
                 ["-c", "--clear     ", "Clear old backups"],
@@ -21,8 +33,11 @@ class Help:
                 ["-v", "--version   ", "print version"]
             ],
             "options": [
-                ["--config  ", "specific ini file"],
-                ["--only    ", "list of sarvice"],
+                ["--config                  ", "specific ini file ex. --config=/path/of/custom/fileini.ini"],
+                ["--service                 ", "list of sarvice ex. --service=sevice_one,service_two"],
+                ["--clear-interval          ", "Override clear interval value (alias NOW = 0) ex. --clear-interval=10 "],
+                ["--gateway                 ", "Override gateway value ex. --gateway=gateway-name-one,gateway-name-two"],
+                ["--clear-gateway-except    ", "Override clear gateway exception ex. --clear-gateway-except=gateway-name-one,gateway-name-two or --clear-gateway-except clear all excepions"]
             ]
         }
         pass

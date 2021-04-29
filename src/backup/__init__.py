@@ -32,7 +32,7 @@ class Backups:
 
         default_gateway = config['DEFAULT'].get(
             'GATEWAY',
-            None
+            'local'
         )
 
         if not os.path.exists(default_dir):
@@ -42,10 +42,10 @@ class Backups:
             sType = config[s].get('TYPE', None)
             if sType in ['mysql', 'mongo']:
                 if sType == 'mysql':
-                    self.__runMysql(dbs, config, s, default_dir)
+                    self.__runMysql(dbs, config, s, default_dir, default_gateway)
 
                 if sType == 'mongo':
-                    self.__runMongo(dbs, config, s, default_dir)
+                    self.__runMongo(dbs, config, s, default_dir, default_gateway)
             else:
                 self.__logger.error(
                     f"[service={s}] [type={sType}] No type allowed FAILURE"
@@ -81,7 +81,7 @@ class Backups:
             mysql = Mysql(
                 self.__logger,
                 config[service].get('DIR', default_dir),
-                config[service].get('GATEWAY', default_gateway)
+                os.getenv('FRIDA_OVERRIDE_GATEWAY', config[service].get('GATEWAY', default_gateway))
             )
             mysql.run(
                 service,
@@ -126,7 +126,7 @@ class Backups:
             mongo = Mongo(
                 self.__logger,
                 config[service].get('DIR', default_dir),
-                config[service].get('GATEWAY', default_gateway)
+                os.getenv('FRIDA_OVERRIDE_GATEWAY', config[service].get('GATEWAY', default_gateway))
             )
             mongo.run(
                 service,
