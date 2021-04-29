@@ -137,6 +137,7 @@ Copy this code
 from gateways.GatewayABC import GatewayABC
 import os
 import requests
+import typing
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from dotenv import load_dotenv, find_dotenv
 
@@ -145,12 +146,13 @@ class CustomGateway(GatewayABC):
     def __init__(self, logger):
         self.__logger = logger
 
-    def send(self, archivePath) -> str:
+    def send(self, archivePath) -> typing.Union[str, None]:
         key = "custom_key"
         try:
             self.__logger.info(f"Custom gateway send")
         except Exception as e:
             self.__logger.error(f"Custom gateway send error {e}")
+            raise Exception("[FridaGateway] send error")
         return key
 
     def delete(self, key):
@@ -159,6 +161,7 @@ class CustomGateway(GatewayABC):
             self.__logger.info(f"Custom gateway delete")
         except Exception as e:
             self.__logger.error(f"Custom gateway delete error {e}")
+            raise Exception("[FridaGateway] clear error")
         pass
 
 ```
