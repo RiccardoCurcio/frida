@@ -2,3 +2,4 @@ pymongo
 pymysql
 boto3
 super-case-converter-2000
+GitPython

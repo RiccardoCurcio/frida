@@ -1,20 +1,25 @@
+import git
+import os
+
+
 class Help:
 
     def __init__(self):
+        local_repo = git.Repo(path=os.getenv('PARENT_PATH'))
         self.__name = "Backup"
-        self.__version = "develop"
+        self.__version = local_repo.active_branch.name
         self.__help = {
-            "usage": "python3 main.py [FLAGS] [OPTIONS]",
+            "usage": "python3 -m frida [FLAGS] [OPTIONS]",
             "examples": [
-                "python3 main.py -b",
-                "python3 main.py -b -c",
-                "python3 main.py -l",
-                "python3 main.py --config=config.ini -b --service=mysql_db",
-                "python3 main.py --config=config.ini -l --service=mongo_db",
-                "python3 main.py --config=config.ini -c --service=mongo_db,mysql_db",
-                "python3 main.py --config=config.ini -c --service=mongo_db,mysql_db --clear-interval=NOW",
-                "python3 main.py -c --service=mysql_service_name_2 --gateway=local --clear-gateway-except=custom.customgateway",
-                "python3 main.py -c --service=mysql_service_name_2 --clear-gateway-except"
+                "python3 -m frida -b",
+                "python3 -m frida -b -c",
+                "python3 -m frida -l",
+                "python3 -m frida --config=config.ini -b --service=mysql_db",
+                "python3 -m frida --config=config.ini -l --service=mongo_db",
+                "python3 -m frida --config=config.ini -c --service=mongo_db,mysql_db",
+                "python3 -m frida --config=config.ini -c --service=mongo_db,mysql_db --clear-interval=NOW",
+                "python3 -m frida -c --service=mysql_service_name_2 --gateway=local --clear-gateway-except=custom.customgateway",
+                "python3 -m frida -c --service=mysql_service_name_2 --clear-gateway-except"
             ],
             "flags": [
                 ["-c", "--clear     ", "Clear old backups"],

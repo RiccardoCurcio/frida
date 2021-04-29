@@ -81,7 +81,7 @@ class Backups:
             mysql = Mysql(
                 self.__logger,
                 config[service].get('DIR', default_dir),
-                config[service].get('GATEWAY', default_gateway)
+                os.getenv('FRIDA_OVERRIDE_GATEWAY', config[service].get('GATEWAY', default_gateway))
             )
             mysql.run(
                 service,
@@ -126,7 +126,7 @@ class Backups:
             mongo = Mongo(
                 self.__logger,
                 config[service].get('DIR', default_dir),
-                config[service].get('GATEWAY', default_gateway)
+                os.getenv('FRIDA_OVERRIDE_GATEWAY', config[service].get('GATEWAY', default_gateway))
             )
             mongo.run(
                 service,

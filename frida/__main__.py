@@ -26,6 +26,7 @@ def main(logger, config):
         exit(0)
     if "--backup" in sys.argv or "-b" in sys.argv:
         bk = Backups(logger)
+        OverrideGateway.setGateway(sys.argv, logger)
         bk.run(
             dbs,
             config,
