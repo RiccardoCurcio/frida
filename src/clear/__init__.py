@@ -26,15 +26,28 @@ class Clear:
         for service in services:
             serviceDiffTime = config[service].get('CLEAR_INTERVAL', diffTime)
             
-            if os.getenv('CLEAR_INTERVAL', None) is not None:
-                serviceDiffTime = os.getenv('CLEAR_INTERVAL', None)
+            # Override clear interval
+            if os.getenv('FRIDA_CLEAR_INTERVAL', None) is not None:
+                serviceDiffTime = os.getenv('FRIDA_CLEAR_INTERVAL', None)
                 
             self.__logger.debug(f'[{service}] CLEAR_INTERVAL {serviceDiffTime}')
             
             date = datetime.now() - timedelta(days=int(serviceDiffTime))
             if config[service].get('TYPE', None) in ['mysql', 'mongo']:
-                gatewaysList = config[service].get('GATEWAY', config['DEFAULT'].get('GATEWAY', None))
+                gatewaysList = config[service].get('GATEWAY', config['DEFAULT'].get('GATEWAY', 'local'))
+                
+                # Override gateway
+                if os.getenv('FRIDA_OVERRIDE_GATEWAY', None) is not None:
+                    gatewaysList =  os.getenv('FRIDA_OVERRIDE_GATEWAY', None)
+                
                 gatewayExcept = config[service].get('CLEAR_GATEWAY_EXCEPT', '')
+                
+                # Override clear gateway exception
+                if os.getenv('FRIDA_OVERRIDE_CLEAR_GATEWAY_EXCEPT', None) is not None:
+                    if os.getenv('FRIDA_OVERRIDE_CLEAR_GATEWAY_EXCEPT', None) == '--RESET--':
+                        gatewayExcept = ''
+                    gatewayExcept = os.getenv('FRIDA_OVERRIDE_CLEAR_GATEWAY_EXCEPT', None)
+                
                 if config[service].get('TYPE', None) == 'mysql':
                     clear = Mysql(
                         self.__logger,

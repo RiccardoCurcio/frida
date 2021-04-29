@@ -11,6 +11,8 @@ from src.help import Help
 from src.config import Config
 from src.only import Only
 from src.clearInterval import ClearInterval
+from src.overrideGateway import OverrideGateway
+from src.overrideClearGatewayExcept import OverrideClearGatewayExcept
 
 
 def main(logger, config):
@@ -31,6 +33,8 @@ def main(logger, config):
         )
     if "--clear" in sys.argv or "-c" in sys.argv:
         ClearInterval.setClearInterval(sys.argv, logger)
+        OverrideGateway.setGateway(sys.argv, logger)
+        OverrideClearGatewayExcept.setClearGatewayExcept(sys.argv, logger)
         clear = Clear(logger)
         clear.run(
             config,

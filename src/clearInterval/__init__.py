@@ -6,7 +6,7 @@ import os
 class ClearInterval:
 
     @staticmethod
-    def setClearInterval(args, logger) -> list:
+    def setClearInterval(args, logger) -> None:
         r = re.compile('^--clear-interval=.*')
         confParam = list(filter(r.match, args))
         if len(confParam) == 1:
@@ -18,7 +18,7 @@ class ClearInterval:
                     else:
                         sys.exit(0)
                 clearInterval = int(value)
-                os.environ['CLEAR_INTERVAL'] = str(clearInterval)
+                os.environ['FRIDA_CLEAR_INTERVAL'] = str(clearInterval)
             except Exception as e:
                 logger.error(f'Not valid --clear-interval must be a number or NOW {e}')
                 sys.exit(1)

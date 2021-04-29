@@ -84,7 +84,7 @@ DB_MECHANISM = SCRAM-SHA-256
     $ python3 -m frida --config=custom_config.ini
 
     // create backup archive only for services mysql_service_name_2 and mongo_service_name_1
-    $ python3 -m frida --config=custom_config.ini -b --only=mysql_service_name_2,mongo_service_name_1
+    $ python3 -m frida --config=custom_config.ini -b --service=mysql_service_name_2,mongo_service_name_1
 
     // list of backups use different config file
     $ python3 -m frida --config=custom_config.ini -l
@@ -99,13 +99,22 @@ DB_MECHANISM = SCRAM-SHA-256
     $ python3 -m frida -b -c
 
     // clear all old backup for service mysql_service_name_2
-    $ python3 -m frida -c --only=mysql_service_name_2
+    $ python3 -m frida -c --service=mysql_service_name_2
 
     // clear all old backup for all services with ovveride clear interval value
     python3 main.py --config=config.ini -c --clear-interval=NOW
 
     // clear all old backup for all services with ovveride clear interval value
     python3 main.py --config=config.ini -c --clear-interval=10
+
+    // clear all old backup for service mysql_service_name_2 override gateway value override clear gateway except value
+    python3 main.py -c --service=mysql_service_name_2  --gateway=local --clear-gateway-except
+
+    // clear all old backup for service mysql_service_name_2 override gateway value and override clear gateway except value
+    python3 main.py -c --service=mysql_service_name_2  --gateway=local --clear-gateway-except=custom.customgateway
+
+    // clear all old backup for service mysql_service_name_2 override clear gateway except value (empty the exceptions)
+    python3 main.py -c --service=mysql_service_name_2 --clear-gateway-except 
 
     // Print help
     $ python3 -m frida -h
@@ -169,8 +178,6 @@ DB_USERNAME = username
 DB_PASSWORD = password
 # send archive to external storage
 GATEWAY = custom.custom_gateway,s3
-# clear from external storage
-CLEAR_GATEWAY = true
 # custom clear value 
 CLEAR_INTERVAL = 2
 # default from DEFAULT

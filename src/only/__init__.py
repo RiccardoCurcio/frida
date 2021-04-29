@@ -7,10 +7,10 @@ class Only:
 
     @staticmethod
     def getOnlyService(args, logger, config) -> list:
-        r = re.compile('^--only=.*')
+        r = re.compile('^--service=.*')
         confParam = list(filter(r.match, args))
         if len(confParam) == 1:
-            services = confParam[0][7:].split(',')
+            services = confParam[0][10:].split(',')
             for service in services:
                 if service not in config.sections():
                     logger.error(

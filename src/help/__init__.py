@@ -9,10 +9,12 @@ class Help:
                 "python3 main.py -b",
                 "python3 main.py -b -c",
                 "python3 main.py -l",
-                "python3 main.py --config=config.ini -b --only=mysql_db",
-                "python3 main.py --config=config.ini -l --only=mongo_db",
-                "python3 main.py --config=config.ini -c --only=mongo_db,mysql_db"
-                "python3 main.py --config=config.ini -c --only=mongo_db,mysql_db --clear-interval=NOW"
+                "python3 main.py --config=config.ini -b --service=mysql_db",
+                "python3 main.py --config=config.ini -l --service=mongo_db",
+                "python3 main.py --config=config.ini -c --service=mongo_db,mysql_db",
+                "python3 main.py --config=config.ini -c --service=mongo_db,mysql_db --clear-interval=NOW",
+                "python3 main.py -c --service=mysql_service_name_2 --gateway=local --clear-gateway-except=custom.customgateway",
+                "python3 main.py -c --service=mysql_service_name_2 --clear-gateway-except"
             ],
             "flags": [
                 ["-c", "--clear     ", "Clear old backups"],
@@ -22,9 +24,11 @@ class Help:
                 ["-v", "--version   ", "print version"]
             ],
             "options": [
-                ["--config            ", "specific ini file --config=/path/of/custom/fileini.ini"],
-                ["--only              ", "list of sarvice --only=sevice_one,service_two"],
-                ["--clear-interval    ", "Override clear interval value (alias NOW = 0) --clear-interval=10 "]
+                ["--config                  ", "specific ini file ex. --config=/path/of/custom/fileini.ini"],
+                ["--service                 ", "list of sarvice ex. --service=sevice_one,service_two"],
+                ["--clear-interval          ", "Override clear interval value (alias NOW = 0) ex. --clear-interval=10 "],
+                ["--gateway                 ", "Override gateway value ex. --gateway=gateway-name-one,gateway-name-two"],
+                ["--clear-gateway-except    ", "Override clear gateway exception ex. --clear-gateway-except=gateway-name-one,gateway-name-two or --clear-gateway-except clear all excepions"]
             ]
         }
         pass

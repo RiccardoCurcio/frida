@@ -30,12 +30,12 @@ class Mysql:
 
             print(f"\n[{service}]")
             if not os.path.exists(path):
-                print(f" - Empity")
+                print(f" - Empty")
                 return None
 
             jsonStore = self.__loadJson(path)
             if len(jsonStore.keys()) == 0:
-                print(f" - Empity")
+                print(f" - Empty")
                 return None
 
             for key in jsonStore.keys():
