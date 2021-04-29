@@ -33,9 +33,10 @@ DB_DATABASE = dbname
 DB_USERNAME = username
 DB_PASSWORD = password
 # send archive to external storage
-; GATEWAY = custom.customgateway,s3
+; if GATEWAY is set and 'local' is in list of gateway the local the archives will be persistent
+; GATEWAY = custom.customgateway,s3,local
 # clear from external storage
-; CLEAR_GATEWAY = false
+; CLEAR_GATEWAY_EXCEPT = custom.customgateway
 # custom clear value 
 ; CLEAR_INTERVAL = 2
 # default from DEFAULT
@@ -99,6 +100,12 @@ DB_MECHANISM = SCRAM-SHA-256
 
     // clear all old backup for service mysql_service_name_2
     $ python3 -m frida -c --only=mysql_service_name_2
+
+    // clear all old backup for all services with ovveride clear interval value
+    python3 main.py --config=config.ini -c --clear-interval=NOW
+
+    // clear all old backup for all services with ovveride clear interval value
+    python3 main.py --config=config.ini -c --clear-interval=10
 
     // Print help
     $ python3 -m frida -h

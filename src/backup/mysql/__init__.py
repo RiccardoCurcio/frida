@@ -15,6 +15,7 @@ class Mysql:
         self.__dir_path = dir
         self.__logger = logger
         self.__gateway = gateway.split(',') if gateway is not None else []
+        self.__localPersistence = True if 'local' in self.__gateway else False
 
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path)
@@ -112,11 +113,20 @@ class Mysql:
                 f"[{service}] Archive {dirPath}/{fileName}.tgz CREATED\n"
             )
             
-            locations = [{'location': 'frida', 'key': f'{dirPath}/{fileName}.tgz'}]
+            locations = []
             locations = locations + self.__callGateway(
                 dirPath,
                 fileName
             )
+            
+            self.__logger.debug(f"[{service}] Local persistance {self.__localPersistence}")
+            
+            if self.__localPersistence is False:
+                os.remove(f'{dirPath}/{fileName}.tgz')
+                self.__logger.info(f"[{service}] Local archive remove {dirPath}/{fileName}.tgz")
+            else:
+                 locations = locations + [{'location': 'frida', 'key': f'{dirPath}/{fileName}.tgz'}]
+            
             self.__updateJsonStore(locations, dirPath, fileName)
         finally:
             DEVNULL.close()
@@ -131,10 +141,17 @@ class Mysql:
 
     def __callGateway(self, dirPath: str, fileName: str) -> list:
         locations = []
+        
         for gatewayPath in self.__gateway:
-            g = Gateway.get(gatewayPath, self.__logger)
-            key = g.send(f'{dirPath}/{fileName}.tgz')
-            locations.append({'location': gatewayPath, 'key': key})
+            if gatewayPath != 'local':
+                try:
+                    g = Gateway.get(gatewayPath, self.__logger)
+                    key = g.send(f'{dirPath}/{fileName}.tgz')
+                    if key is None:
+                        raise Exception("None key from gateway")
+                    locations.append({'location': gatewayPath, 'key': key})
+                except Exception as e:
+                    self.__logger.error(f"Call gateway error {e}")
         return locations
 
     def __updateJsonStore(self, locations: list, dirPath: str, fileName: str) -> None:
@@ -142,10 +159,11 @@ class Mysql:
         if os.path.exists(f'{dirPath}/.jsonStore.json'):
             with open(f'{dirPath}/.jsonStore.json', 'r') as f:
                 jsonStore = json.load(f)
-
-        with open(f'{dirPath}/.jsonStore.json', 'w') as f:
-            jsonItem = {
-                f"{fileName}": locations
-            }
-            jsonStore.update(jsonItem)
-            json.dump(jsonStore, f)
+                
+        if len(locations) > 0:
+            with open(f'{dirPath}/.jsonStore.json', 'w') as f:
+                jsonItem = {
+                    f"{fileName}": locations
+                }
+                jsonStore.update(jsonItem)
+                json.dump(jsonStore, f)

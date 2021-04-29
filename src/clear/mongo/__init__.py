@@ -45,17 +45,19 @@ class Mongo:
                         updatedArhive.update({key: []})
                         for location in dictArchives[key]:
                             if location['location'] == 'frida':
-                                os.remove(f'{location["key"]}')
-                                self.__logger.info(
-                                    f"[{service}] Mongo clear archive deleted -> {location['key']}"
-                                )
+                                if 'local' in self.__gateway:
+                                    os.remove(f'{location["key"]}')
+                                    self.__logger.info(
+                                        f"[{service}] Mongo clear archive deleted -> {location['key']}"
+                                    )
                             else:
                                 # gateway
                                 if location['location'] in self.__gateway:
                                     for gatewayPath in self.__gateway:
-                                        if gatewayPath == location['location']:
-                                            g = Gateway.get(location['location'], self.__logger)
-                                            g.delete(location['key'])
+                                        if gatewayPath != 'local':
+                                            if gatewayPath == location['location']:
+                                                g = Gateway.get(location['location'], self.__logger)
+                                                g.delete(location['key'])
                                 else:
                                     updatedArhive[key].append(location)
                             count = count + 1

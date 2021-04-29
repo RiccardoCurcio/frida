@@ -14,7 +14,7 @@ DB_DATABASE = dbname
 DB_USERNAME = username
 DB_PASSWORD = password
 ; GATEWAY = custom.customgateway,s3
-; CLEAR_GATEWAY = false
+; CLEAR_GATEWAY_EXCEPT = custom.customgateway # not send gateway for clear process
 ; CLEAR_INTERVAL = 2
 ; DIR = /mysql_service_name_1/custom/path/of/folder/backup
 

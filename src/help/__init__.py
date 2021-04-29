@@ -9,9 +9,10 @@ class Help:
                 "python3 main.py -b",
                 "python3 main.py -b -c",
                 "python3 main.py -l",
-                "python3 main.py --config=config.ini -b --only=mysql_import",
-                "python3 main.py --config=config.ini -l --only=mongo_dbs",
-                "python3 main.py --config=config.ini -c --only=mongo_dbs"
+                "python3 main.py --config=config.ini -b --only=mysql_db",
+                "python3 main.py --config=config.ini -l --only=mongo_db",
+                "python3 main.py --config=config.ini -c --only=mongo_db,mysql_db"
+                "python3 main.py --config=config.ini -c --only=mongo_db,mysql_db --clear-interval=NOW"
             ],
             "flags": [
                 ["-c", "--clear     ", "Clear old backups"],
@@ -21,8 +22,9 @@ class Help:
                 ["-v", "--version   ", "print version"]
             ],
             "options": [
-                ["--config  ", "specific ini file"],
-                ["--only    ", "list of sarvice"],
+                ["--config            ", "specific ini file --config=/path/of/custom/fileini.ini"],
+                ["--only              ", "list of sarvice --only=sevice_one,service_two"],
+                ["--clear-interval    ", "Override clear interval value (alias NOW = 0) --clear-interval=10 "]
             ]
         }
         pass

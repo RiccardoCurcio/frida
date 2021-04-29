@@ -25,14 +25,22 @@ class Clear:
 
         for service in services:
             serviceDiffTime = config[service].get('CLEAR_INTERVAL', diffTime)
+            
+            if os.getenv('CLEAR_INTERVAL', None) is not None:
+                serviceDiffTime = os.getenv('CLEAR_INTERVAL', None)
+                
+            self.__logger.debug(f'[{service}] CLEAR_INTERVAL {serviceDiffTime}')
+            
             date = datetime.now() - timedelta(days=int(serviceDiffTime))
             if config[service].get('TYPE', None) in ['mysql', 'mongo']:
+                gatewaysList = config[service].get('GATEWAY', config['DEFAULT'].get('GATEWAY', None))
+                gatewayExcept = config[service].get('CLEAR_GATEWAY_EXCEPT', '')
                 if config[service].get('TYPE', None) == 'mysql':
                     clear = Mysql(
                         self.__logger,
                         config[service].get('DIR', default_dir),
                         date,
-                        config[service].get('GATEWAY', None) if config[service].getboolean('CLEAR_GATEWAY', False) is True else None
+                        ','.join([x for x in gatewaysList.split(',') if (x not in gatewayExcept.split(','))])
                     )
                     clear.run(service)
                 if config[service].get('TYPE', None) == 'mongo':
@@ -40,7 +48,7 @@ class Clear:
                         self.__logger,
                         config[service].get('DIR', default_dir),
                         date,
-                        config[service].get('GATEWAY', None) if config[service].getboolean('CLEAR_GATEWAY', False) is True else None
+                        ','.join([x for x in gatewaysList.split(',') if (x not in gatewayExcept.split(','))])
                     )
                     clear.run(service)
 
