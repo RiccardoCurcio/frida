@@ -10,8 +10,8 @@ class Bootstrap:
 
     def setLogger(self) -> logging.Logger:
         try:
-            if not os.path.exists(f'{os.getenv("PARENT_PATH")}/logs'):
-                os.makedirs(f'{os.getenv("PARENT_PATH")}/logs')
+            if not os.path.exists(f'{os.getenv("FRIDA_PARENT_PATH")}/logs'):
+                os.makedirs(f'{os.getenv("FRIDA_PARENT_PATH")}/logs')
 
             handler = logging.StreamHandler()
             handler.setFormatter(
@@ -25,7 +25,7 @@ class Bootstrap:
             log_name = now.strftime("%Y-%m-%d")
 
             logging.basicConfig(
-                filename=f'{os.getenv("PARENT_PATH")}/logs/{log_name}_application.log',
+                filename=f'{os.getenv("FRIDA_PARENT_PATH")}/logs/{log_name}_application.log',
                 filemode='a',
                 format='[%(asctime)s] %(levelname)s %(message)s'
             )
