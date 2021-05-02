@@ -24,8 +24,8 @@ class Config:
 
     @staticmethod
     def checkConfigFile(configFile: str) -> bool:
-        if os.path.isfile(f'{os.getenv("PARENT_PATH")}/{configFile}'):
-            return f'{os.getenv("PARENT_PATH")}/{configFile}'
+        if os.path.isfile(f'{os.getenv("FRIDA_PARENT_PATH")}/{configFile}'):
+            return f'{os.getenv("FRIDA_PARENT_PATH")}/{configFile}'
         elif os.path.isfile(f'{configFile}'):
             return f'{configFile}'
         else:

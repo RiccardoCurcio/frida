@@ -1,190 +1,280 @@
 import os
-import json
+import typing
 from subprocess import run as runProcess, STDOUT
 from datetime import datetime
-from logging import Logger
 from shutil import rmtree
 from src.gateway import Gateway
 
 
 class Mongo:
-    def __init__(
-        self,
-        logger: Logger,
-        dir: str,
-        parentPath: str,
-        gateway: str = None
-    ) -> None:
-        self.__dir_path = dir
-        self.__parentPath = parentPath
-        self.__logger = logger
+
+    def __init__(self, process, service, gateway) -> None:
+        self.__service = service
+        self.__proc = process
+        self._logger = self.__proc._logger
         self.__gateway = gateway if gateway is not None else []
-        self.__localPersistence = True if 'local' in self.__gateway else False
+        self.__localPersistence = False
+        self.__backupPath = f'{self.__proc._fridaBackupDir}/{self.__service}'
+        self.__dumpName = (datetime.now()).strftime("%Y-%m-%d_%H:%M:%S")
+        self.__dumpPath = f'{self.__backupPath}/{self.__dumpName}'
 
-        if not os.path.exists(self.__dir_path):
-            os.makedirs(self.__dir_path)
+        if 'local' in self.__gateway:
+            self.__localPersistence = True
+            self.__gateway.remove('local')
 
-        if not os.path.exists(f'{self.__parentPath}/logs'):
-            os.makedirs(f'{self.__parentPath}/logs')
-        pass
+        None if os.path.exists(self.__proc._fridaBackupDir) else os.makedirs(
+            self.__proc._fridaBackupDir)
+        None if os.path.exists(self.__backupPath) else os.makedirs(
+            self.__backupPath)
+        None if os.path.exists(
+            f'{self.__proc._fridaParentPath}/logs'
+            ) else os.makedirs(f'{self.__proc._fridaParentPath}/logs')
 
-    def run(
-        self,
-        service: str,
-        host: str,
-        port: str,
-        db: str,
-        user: str,
-        password: str,
-        mechanism: str
-    ) -> bool:
+        self.__logFile = f"""{
+                self.__proc._fridaParentPath
+            }/logs/{
+                self.__service
+            }_{
+                self.__dumpName
+            }.log"""
+
+        self.__dCmd = [
+            f'mongodump',
+            f"--host={self.__proc._cmd.config[self.__service].get('DB_HOST', None)}",
+            f"--port={self.__proc._cmd.config[self.__service].get('DB_PORT', None)}",
+            f"--authenticationDatabase={self.__proc._cmd.config[self.__service].get('DB_DATABASE', None)}"
+            f"--user={self.__proc._cmd.config[self.__service].get('DB_USERNAME', None)}",
+            f"--password={self.__proc._cmd.config[self.__service].get('DB_PASSWORD', None)}",
+            f"--authenticationMechanism={self.__proc._cmd.config[self.__service].get('DB_MECHANISM', 'SCRAM-SHA-256')}",
+            '--forceTableScan',
+            f'--out={self.__dumpPath}'
+        ]
+
+    def run(self):
         try:
-            now = datetime.now()
-            dirName = now.strftime("%Y-%m-%d_%H:%M:%S")
+            # create dump - local (directory)
+            dumpDir = self.__createDump(self.__dumpPath, self.__dCmd)
 
-            serviceLog = open(
-                f'{self.__parentPath}/logs/{service}_{dirName}.log',
-                'a'
-            )
-            self.__logger.info(f"[{service}] Dump START")
-            serviceLog.write(f"[{service}] Dump START\n")
-
-            path = f'{self.__dir_path}/{service}'
-
-            if not os.path.exists(path):
-                os.makedirs(path)
-
-            cmd = [
-                f'mongodump',
-                f'--host={host}',
-                f'--port={port}',
-                f'--authenticationDatabase={db}',
-                f'--username={user}',
-                f'--password="{password}"',
-                f"--authenticationMechanism={mechanism}",
-                '--forceTableScan',
-                f'--out={path}/{dirName}'
-            ]
-
-            with open(
-                f'{self.__parentPath}/logs/{service}_{dirName}.log',
-                'a'
-            ) as f:
-                runProcess(cmd, stderr=f)
-
-            self.__logger.info(
-                f"[{service}] Dump {path}/{dirName} COMPLETE"
-            )
-            serviceLog.write(
-                f"[{service}] Dump {path}/{dirName} COMPLETE\n"
+            Mongo.ServiceLogger.info(
+                self.__logFile,
+                self.__service,
+                f"Dump directory {dumpDir} CREATED"
             )
 
-            self.compressorTarGz(service, path, dirName, serviceLog)
-            serviceLog.close()
+            # create archive from local dump
+            archiveFile = self.__createArchive(dumpDir)
 
+            Mongo.ServiceLogger.info(
+                self.__logFile,
+                self.__service,
+                f"Archive {archiveFile} CREATED"
+            )
+
+            # remove local dump
+            self.__removeDumpDir(dumpDir)
+            Mongo.ServiceLogger.info(
+                self.__logFile,
+                self.__service,
+                f"Dump directory {dumpDir} REMOVED"
+            )
+
+            # send gateway
+            locations = [] + self.__callGateway(
+                archiveFile) if archiveFile else []
+
+            # if persistance is false remove local archive
+            if self.__localPersistence:
+                locations = locations + [
+                    {
+                        'location': 'frida',
+                        'key': archiveFile
+                    }
+                ]
+            else:
+                self.__removeDump(archiveFile)
+                Mongo.ServiceLogger.info(
+                    self.__logFile,
+                    self.__service,
+                    f"Local archive {archiveFile} REMOVED"
+                )
+
+            # create or update a jsonStore.json
+            self.__updateJsonStore(locations)
+            Mongo.ServiceLogger.info(
+                    self.__logFile,
+                    self.__service,
+                    f".jsonStore.json UPDATED"
+                )
         except Exception as e:
-            self.__logger.error(
-                f"[{service}] Dump FAILURE {e}"
-            )
+            Mongo.ServiceLogger.error(
+                    self.__logFile,
+                    self.__service,
+                    f"Error dump {e}"
+                )
 
-    def compressorTarGz(self, service, dirPath, dirName, serviceLog):
+    def __createDump(self, dumpPath: str, cmd: list) -> str:
+        """[Create dump file]
+
+        Args:
+            dumpPath (str): [description]
+            cmd (list): [description]
+
+        Returns:
+            str: [description]
+        """
         try:
-            self.__logger.info(
-                f"[{service}] Create archive {dirPath}/{dirName}.tgz START"
-            )
-            serviceLog.write(
-                f"[{service}] Create archive {dirPath}/{dirName}.tgz START\n"
-            )
+            self._logger.debug(
+                f"[{self.__service}] DUMP COMMAND {self.__dCmd}")
+            self._logger.info(f"[{self.__service}] create dump START")
 
+            if not self.__proc._devMode:
+                with open(self.__logFile, 'a') as f:
+                    runProcess(
+                        cmd,
+                        stderr=f
+                    )
+            else:
+                self._logger.debug(f"[{self.__service}] DEV MODE TRUE")
+                os.makedirs(dumpPath)
+
+            self._logger.info(f"[{self.__service}] create dump FINSH")
+            return f'{dumpPath}'
+        except Exception as e:
+            self._logger.error(f"[{self.__service}] create dump FAILURE {e}")
+            raise Exception(f"__createDump {e}")
+
+    def __removeDump(self, dumpFile: str) -> None:
+        """[Remove file]
+
+        Args:
+            dumpFile (str): [description]
+        """
+        try:
+            self._logger.info(
+                f"[{self.__service}] remove {dumpFile} file START")
+            if os.path.exists(f'{dumpFile}'):
+                os.remove(f'{dumpFile}')
+            self._logger.info(
+                f"[{self.__service}] remove {dumpFile} file FINISH")
+        except Exception as e:
+            self._logger.error(
+                f"[{self.__service}] remove {dumpFile} file FAILURE {e}")
+            raise Exception(f"__removeDump {e}")
+
+    def __removeDumpDir(self, dumpDir: str) -> None:
+        """[Remove dump directory]
+
+        Args:
+            dumpDir (str): [description]
+        """
+        try:
+            self._logger.info(
+                f"[{self.__service}] remove {dumpDir} START")
+            if os.path.exists(f'{dumpDir}'):
+                rmtree(f'{dumpDir}')
+            self._logger.info(
+                f"[{self.__service}] remove {dumpDir} FINISH")
+        except Exception as e:
+            self._logger.error(
+                f"[{self.__service}] remove {dumpDir} FAILURE {e}")
+            raise Exception(f"__removeDump {e}")
+
+    def __createArchive(self, dumpFile: str) -> typing.Union[str, None]:
+        """[Create archive .tgz]
+
+        Args:
+            dumpFile (str): [description]
+
+        Returns:
+            typing.Union[str, None]: [description]
+        """
+        try:
+            self._logger.info(f"[{self.__service}] create archive START")
             DEVNULL = open(os.devnull, 'wb')
+
             cmd = [
                 'tar',
                 '-czvf',
-                f'{dirPath}/{dirName}.tgz',
+                f'{dumpFile}.tgz',
                 '-C',
-                f'{dirPath}',
-                f'{dirName}'
+                f'{self.__backupPath}',
+                f'{self.__dumpName}'
             ]
-
             runProcess(
                 cmd,
                 stdout=DEVNULL,
                 stderr=STDOUT,
                 universal_newlines=True
             )
-            self.__logger.info(
-                f"[{service}] Archive {dirPath}/{dirName}.tgz CREATED"
-            )
-            serviceLog.write(
-                f"[{service}] Archive {dirPath}/{dirName}.tgz CREATED\n"
-            )
-
-            locations = []
-            locations = locations + self.__callGateway(
-                dirPath,
-                dirName
-            )
-
-            self.__logger.debug(
-                f"[{service}] Local persistance {self.__localPersistence}"
-            )
-
-            if self.__localPersistence is False:
-                os.remove(f'{dirPath}/{dirName}.tgz')
-                self.__logger.info(
-                    f"[{service}] Local archive remove {dirPath}/{dirName}.tgz"
-                )
-            else:
-                locations = locations + [
-                    {
-                        'location': 'frida',
-                        'key': f'{dirPath}/{dirName}.tgz'
-                    }
-                ]
-
-            self.__updateJsonStore(locations, dirPath, dirName)
-
+            self._logger.info(f"[{self.__service}] create archive FINSH")
+            return f'{dumpFile}.tgz'
+        except Exception as e:
+            self._logger.error(
+                f"[{self.__service}] archive create FAILURE {e}")
+            raise Exception(f"__createArchive {e}")
         finally:
             DEVNULL.close()
-            rmtree(f'{dirPath}/{dirName}')
-            self.__logger.info(
-                f"[{service}] {dirPath}/{dirName} DELETED"
-            )
-            serviceLog.write(f"[{service}] {dirPath}/{dirName} DELETED\n")
+        return None
 
-        self.__logger.info(
-            f"[{service}] Archive {dirPath}/{dirName}.tgz COMPLETE"
-        )
+    def __callGateway(self, archive: str) -> list:
+        """[Call gateways]
 
-    def __callGateway(self, dirPath: str, fileName: str) -> list:
+        Args:
+            archive (str): [description]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            list: [description]
+        """
         locations = []
+
         for gatewayPath in self.__gateway:
-            if gatewayPath != 'local':
-                try:
-                    g = Gateway.get(gatewayPath, self.__logger)
-                    key = g.send(f'{dirPath}/{fileName}.tgz')
-                    if key is None:
-                        raise Exception("None key from gateway")
-                    locations.append({'location': gatewayPath, 'key': key})
-                except Exception as e:
-                    self.__logger.error(f"Call gateway error {e}")
+            try:
+                g = Gateway.get(gatewayPath, self._logger)
+                key = g.send(archive)
+                if key is None:
+                    raise Exception("None key from gateway")
+                locations.append({'location': gatewayPath, 'key': key})
+            except Exception as e:
+                self._logger.error(f"Call gateway error {e}")
+                raise Exception(f"__callGateway {e}")
         return locations
 
-    def __updateJsonStore(
-        self,
-        locations: list,
-        dirPath: str,
-        fileName: str
-    ) -> None:
-        jsonStore = {}
-        if os.path.exists(f'{dirPath}/.jsonStore.json'):
-            with open(f'{dirPath}/.jsonStore.json', 'r') as f:
-                jsonStore = json.load(f)
+    def __updateJsonStore(self,  locations: list) -> None:
+        """[Update jsonStore file]
 
-        if len(locations) > 0:
-            with open(f'{dirPath}/.jsonStore.json', 'w') as f:
-                jsonItem = {
-                    f"{fileName}": locations
-                }
-                jsonStore.update(jsonItem)
-                json.dump(jsonStore, f)
+        Args:
+            locations (list): [description]
+
+        Raises:
+            Exception: [description]
+        """
+        try:
+            if len(locations) > 0:
+                content = self.__proc._loadJson(self.__backupPath)
+                content.update({self.__dumpName: locations})
+                self.__proc._replaceJson(self.__backupPath, content)
+        except Exception as e:
+            self._logger.error(f".jsonStore.json error {e}")
+            raise Exception(f"__updateJsonStore {e}")
+
+    class ServiceLogger:
+
+        @classmethod
+        def info(cls, logFile, service, msg=""):
+            with open(logFile, 'a') as f:
+                f.write(
+                    f"""[{
+                        (datetime.now()).strftime('%Y-%m-%d %H:%M:%S')
+                        }] INFO {__name__} {service} {msg}\n""")
+                f.close()
+
+        @classmethod
+        def error(cls, logFile, service, msg=""):
+            with open(logFile, 'a') as f:
+                f.write(f"""[{
+                    (datetime.now()).strftime('%Y-%m-%d %H:%M:%S')
+                    }] ERROR {__name__} {service} {msg}\n""")
+                f.close()

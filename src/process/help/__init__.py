@@ -9,7 +9,6 @@ class HelpProcess(Process):
     def __init__(self, logger: logging.Logger, command: HelpCommand):
         self.__version = None
         self.__command = command
-        self.__logger = logger
         super().__init__(self.__command.config, logger)
 
         local_repo = git.Repo(path=self._fridaParentPath)

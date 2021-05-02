@@ -1,6 +1,7 @@
 [DEFAULT]
 ; default level INFO
 LOGGING_LEVEL = DEBUG
+DEV_MODE = true
 ; days default 365
 CLEAR_INTERVAL = 90
 ; dir default ./backups
