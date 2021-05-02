@@ -48,13 +48,13 @@ class ClearCommand(Command):
         self._overrideGateway = overrideGateway
 
     @property
-    def overrideClearGatewayExcept(self) -> typing.Union[str, None]:
+    def overrideClearGatewayExcept(self) -> typing.Union[list, None]:
         return self._overrideClearGatewayExcept
 
     @overrideClearGatewayExcept.setter
     def overrideClearGatewayExcept(
         self,
-        overrideClearGatewayExcept: typing.Union[str, None] = None
+        overrideClearGatewayExcept: typing.Union[list, None] = None
     ):
         self._overrideClearGatewayExcept = overrideClearGatewayExcept
 

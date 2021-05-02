@@ -4,126 +4,61 @@ import json
 from datetime import datetime
 from logging import Logger
 from src.gateway import Gateway
+from src.process import Process
 
 
 class Clear:
+
     def __init__(
         self,
-        logger: Logger,
-        dir: str,
-        parentPath: str,
-        date: datetime,
-        gateway: str = None
-    ) -> None:
-        self.__dir_path = dir
-        self.__parentPath = parentPath
-        self.__logger = logger
-        self.__date = date
-        self.__gateway = gateway.split(',') if gateway is not None else []
-        pass
+        process: Process,
+        service: str,
+        gateway: list,
+        clearInterval: datetime
+    ):
+        self.__service = service
+        self.__proc = process
+        self._logger = self.__proc._logger
+        self.__gateway = gateway if gateway is not None else []
+        self.__backupPath = f'{self.__proc._fridaBackupDir}/{self.__service}'
+        self.__clearInterval = clearInterval
 
-    def run(
-        self,
-        service: str
-    ) -> None:
-        self.__deleteDirs(service)
-        self.__deleteLogs(service)
+    def run(self):
+        content = self.__proc._loadJson(self.__backupPath)
+        newJson = {}
+        for key in content.keys():
+            if datetime.strptime(
+                key.replace("_", " "), "%Y-%m-%d %H:%M:%S"
+            ) < self.__clearInterval:
+                tmpJson = {key: []}
+                for item in [({'l': 'local', 'k': g['key']} if g['location'] == 'frida' else {'l': g['location'], 'k': g['key']}) for g in content[key]]:
+                    if item['l'] == 'local':
+                        if os.path.exists(f'{item["k"]}'):
+                            os.remove(f'{item["k"]}')
+                            self._logger.info(f'[{self.__service}] local del {item["l"]} {item["k"]}')
+                    else:
+                        if item["l"] in self.__gateway:
+                            try:
+                                g = Gateway.get(item["l"], self._logger)
+                                g.delete(item["k"])
+                                self._logger.info(f'[{self.__service}] gateway del {item["l"]} {item["k"]}')
+                            except Exception as e:
+                                self._logger.error(f'[{self.__service}] gateway error {e}')
+                                tmpJson[key].append({'location': item["l"], "key": item["k"]})
+                        else:
+                            tmpJson[key].append({'location': item["l"], "key": item["k"]})
+                if len(tmpJson[key]) > 0:
+                    newJson.update(tmpJson)
+            else:
+                newJson.update({key: content[key]})
 
-    def __deleteDirs(self, service: str) -> None:
-        try:
-            count = 0
-            path = f'{self.__dir_path}/{service}'
+        self.__proc._replaceJson(self.__backupPath, newJson)
+        self.__clearLogs()
 
-            if not os.path.exists(path):
-                self.__logger.error(
-                    f"[{service}] Mongo clear path {path} not found"
-                )
-                return None
-            dictArchives = self.__loadJson(path)
-            updatedArhive = {}
-            for key in dictArchives.keys():
-                if datetime.strptime(key.replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
-                    try:
-                        updatedArhive.update({key: []})
-                        for location in dictArchives[key]:
-                            if location['location'] == 'frida':
-                                if 'local' in self.__gateway:
-                                    os.remove(f'{location["key"]}')
-                                    self.__logger.info(
-                                        f"[{service}] Mongo clear archive deleted -> {location['key']}"
-                                    )
-                                    count = count + 1
-                                else:
-                                    updatedArhive[key].append(location)
-                            else:
-                                # gateway
-                                if location['location'] in self.__gateway:
-                                    for gatewayPath in self.__gateway:
-                                        if gatewayPath != 'local':
-                                            if gatewayPath == location['location']:
-                                                try:
-                                                    g = Gateway.get(location['location'], self.__logger)
-                                                    g.delete(location['key'])
-                                                    count = count + 1
-                                                except Exception as e:
-                                                    self.__logger.error(f"Call gateway error {e}")
-                                                    updatedArhive[key].append(location)
-                                else:
-                                    updatedArhive[key].append(location)
-                            # count = count + 1
-                    except Exception as e:
-                        self.__logger.error(
-                            f"[{service}] Mongo archive delete -> {key} error: {e}"
-                        )
-                else:
-                    updatedArhive.update({key: dictArchives[key]})
-
-            self.__updateJson(path, updatedArhive)
-            self.__logger.info(
-                f"[{service}] Mongo clear FINISH {count} archive deleted"
-            )
-        except Exception as e:
-            self.__logger.error(
-                f"[{service}] Mongo clear FAILURE {e}"
-            )
-
-    def __deleteLogs(self, service: str) -> None:
-        try:
-            count = 0
-            path = f'{self.__parentPath}/logs'
-            r = re.compile(f'^{service}_[\d]{{4}}-[\d]{{2}}-[\d]{{2}}_[\d]{{2}}:[\d]{{2}}:[\d]{{2}}\.log$')
-            self.__logger.info(f"[{service}] Mongo log files clear START")
-            for filename in list(filter(r.match, os.listdir(path))):
-                file_noservice = filename.replace(f"{service}_", "")
-                if datetime.strptime(file_noservice[:-4].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__date:
-                    try:
-                        os.remove(f"{path}/{filename}")
-                        self.__logger.info(
-                            f"[{service}] delete -> {path}/{filename}"
-                        )
-                        count = count + 1
-                    except Exception as e:
-                        self.__logger.error(
-                            f"[{service}] Mongo logs file delete -> {path}/{filename} error: {e}"
-                        )
-            self.__logger.info(
-                f"[{service}] Mongo logs clear FINISH {count} files deleted"
-            )
-        except Exception as e:
-            self.__logger.error(
-                f"[{service}] Mongo logs clear  error: {e}"
-            )
-
-    def __loadJson(self, dirPath: str) -> dict:
-        jsonStore = {}
-        if os.path.exists(f'{dirPath}/.jsonStore.json'):
-            with open(f'{dirPath}/.jsonStore.json', 'r') as f:
-                jsonStore = json.load(f)
-        return jsonStore
-
-    def __updateJson(self, dirPath: str, jsonStore) -> dict:
-        jsonstoreClear = {}
-        for key in jsonStore.keys():
-            jsonstoreClear.update({key: jsonStore[key]}) if len(jsonStore[key]) > 0 else None 
-        with open(f'{dirPath}/.jsonStore.json', 'w') as f:
-            json.dump(jsonstoreClear, f)
+    def __clearLogs(self):
+        r = re.compile(f'^{self.__service}_[\d]{{4}}-[\d]{{2}}-[\d]{{2}}_[\d]{{2}}:[\d]{{2}}:[\d]{{2}}\.log$')
+        for filename in list(filter(r.match, os.listdir(f'{self.__proc._fridaParentPath}/logs/'))):
+            file_noservice = filename.replace(f"{self.__service}_", "")
+            if datetime.strptime(file_noservice[:-4].replace("_", " "), "%Y-%m-%d %H:%M:%S") < self.__clearInterval:
+                if os.path.exists(f'{self.__proc._fridaParentPath}/logs/{filename}'):
+                    os.remove(f'{self.__proc._fridaParentPath}/logs/{filename}')

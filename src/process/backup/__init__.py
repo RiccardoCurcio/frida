@@ -32,39 +32,11 @@ class BackupProcess(Process):
             if serviceType in self._dbTypeAllowed:
                 if serviceType == 'mysql' and self._mysqlCheck(service):
                     self._logger.debug(f"[{service}] Call subprocess mysql bk")
-                    
                     Mysql(self, service, gateway).run()
-                    # Mysql(
-                    #     self._logger,
-                    #     self._fridaBackupDir,
-                    #     self._fridaParentPath,
-                    #     service,
-                    #     gateway
-                    # ).run(
-                    #     self._cmd.config[service].get('DB_HOST', None),
-                    #     self._cmd.config[service].get('DB_PORT', None),
-                    #     self._cmd.config[service].get('DB_DATABASE', None),
-                    #     self._cmd.config[service].get('DB_USERNAME', None),
-                    #     self._cmd.config[service].get('DB_PASSWORD', None)
-                    # )
 
                 if serviceType == 'mongo' and self._mongoCheck(service):
                     self._logger.debug(f"[{service}] Call subprocess mongo bk")
                     Mongo(self, service, gateway).run()
-                    # Mongo(
-                    #     self._logger,
-                    #     self._fridaBackupDir,
-                    #     self._fridaParentPath,
-                    #     gateway
-                    # ).run(
-                    #     service,
-                    #     self._cmd.config[service].get('DB_HOST', None),
-                    #     self._cmd.config[service].get('DB_PORT', None),
-                    #     self._cmd.config[service].get('DB_DATABASE', None),
-                    #     self._cmd.config[service].get('DB_USERNAME', None),
-                    #     self._cmd.config[service].get('DB_PASSWORD', None),
-                    #     self._cmd.config[service].get('DB_MECHANISM', 'SCRAM-SHA-256')
-                    # )
             else:
                 self._logger.error(
                     f"[service={service}] [type={serviceType}] No type allowed FAILURE"
