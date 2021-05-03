@@ -1,5 +1,6 @@
 from converter import case
 
+
 class Gateway:
 
     @staticmethod

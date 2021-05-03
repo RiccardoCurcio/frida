@@ -1,4 +1,5 @@
 import os
+import re
 import typing
 from subprocess import run as runProcess, STDOUT
 from datetime import datetime
@@ -28,7 +29,7 @@ class Mongo:
             self.__backupPath)
         None if os.path.exists(
             f'{self.__proc._fridaParentPath}/logs'
-            ) else os.makedirs(f'{self.__proc._fridaParentPath}/logs')
+        ) else os.makedirs(f'{self.__proc._fridaParentPath}/logs')
 
         self.__logFile = f"""{
                 self.__proc._fridaParentPath
@@ -49,7 +50,6 @@ class Mongo:
             '--forceTableScan',
             f'--out={self.__dumpPath}'
         ]
-        print()
 
     def run(self):
         try:
@@ -102,17 +102,17 @@ class Mongo:
             # create or update a jsonStore.json
             self.__updateJsonStore(locations)
             Mongo.ServiceLogger.info(
-                    self.__logFile,
-                    self.__service,
-                    f".jsonStore.json UPDATED"
-                )
+                self.__logFile,
+                self.__service,
+                f".jsonStore.json UPDATED"
+            )
         except Exception as e:
             self._logger.error(f"[{self.__service}] {e}")
             Mongo.ServiceLogger.error(
-                    self.__logFile,
-                    self.__service,
-                    f"Error dump {e}"
-                )
+                self.__logFile,
+                self.__service,
+                f"Error dump {e}"
+            )
 
     def __createDump(self, dumpPath: str, cmd: list) -> str:
         """[Create dump file]
@@ -126,7 +126,7 @@ class Mongo:
         """
         try:
             self._logger.debug(
-                f"[{self.__service}] DUMP COMMAND {self.__dCmd}")
+                f"[{self.__service}] DUMP COMMAND {[re.sub(r'^--password=.*$', '--password='+'*'*(len(item)-11), item)  for item in self.__dCmd]}")
             self._logger.info(f"[{self.__service}] create dump START")
 
             if not self.__proc._devMode:
@@ -231,17 +231,22 @@ class Mongo:
             list: [description]
         """
         locations = []
-
+        
         for gatewayPath in self.__gateway:
             try:
-                g = Gateway.get(gatewayPath, self._logger)
-                key = g.send(archive)
-                if key is None:
-                    raise Exception("None key from gateway")
-                locations.append({'location': gatewayPath, 'key': key})
+                if not self.__proc._devMode:
+                    g = Gateway.get(gatewayPath, self._logger)
+                    key = g.send(archive)
+                    if key is None:
+                        raise Exception("None key from gateway")
+                    locations.append({'location': gatewayPath, 'key': key})
+                else:
+                    locations.append({'location': gatewayPath, 'key': 'dev-mode'})
+                    self._logger.debug(f"[{self.__service}] gateway send DEV MODE TRUE")
             except Exception as e:
                 self._logger.error(f"Call gateway error {e}")
                 raise Exception(f"__callGateway {e}")
+       
         return locations
 
     def __updateJsonStore(self,  locations: list) -> None:

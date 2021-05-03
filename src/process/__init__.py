@@ -37,45 +37,67 @@ class Process(ABC):
             f.close()
 
     def _mysqlCheck(self, service: str):
-        if self._devMode is False:
-            dbs = DbConnection(self._logger)
-            if dbs.mysqlconnect(
-                self.__config[service].get('DB_HOST', None),
-                self.__config[service].get('DB_PORT', None),
-                self.__config[service].get('DB_DATABASE', None),
-                self.__config[service].get('DB_USERNAME', None),
-                self.__config[service].get('DB_PASSWORD', None),
-                self.__config[service].get('DB_CHARSET', 'utf8')
-            ):
-                self._logger.info(
-                    f'[{service}] Mysql connection SUCCESS'
+        try:
+            if self._devMode is False:
+                dbs = DbConnection(self._logger)
+                if dbs.mysqlconnect(
+                    self.__config[service].get('DB_HOST', None),
+                    self.__config[service].get('DB_PORT', None),
+                    self.__config[service].get('DB_DATABASE', None),
+                    self.__config[service].get('DB_USERNAME', None),
+                    self.__config[service].get('DB_PASSWORD', None),
+                    self.__config[service].get('DB_CHARSET', 'utf8')
+                ):
+                    self._logger.info(
+                        f'[{service}] Mysql connection SUCCESS'
+                    )
+                    return True
+                self._logger.error(
+                    f"[{service}] Mysql Authentication FAILURE"
                 )
-                return True
+                self._logger.info(
+                    f"[{service}] SKIP"
+                )
+                return False
+            self._logger.debug(f"[{service}] DEV MODE ENABLE")
+            return True
+        except Exception as e:
             self._logger.error(
-                f"[{service}] Mysql Authentication FAILURE"
+                f"[{service}] Mysql Authentication FAILURE {e}"
             )
-            return False
-        self._logger.debug(f"[{service}] DEV MODE ENABLE")
-        return True
+            self._logger.info(
+                f"[{service}] SKIP"
+            )
 
     def _mongoCheck(self, service: str):
-        if self._devMode is False:
-            dbs = DbConnection(self._logger)
-            if dbs.mongoconnect(
-                self.__config[service].get('DB_HOST', None),
-                self.__config[service].get('DB_PORT', None),
-                self.__config[service].get('DB_DATABASE', None),
-                self.__config[service].get('DB_USERNAME', None),
-                self.__config[service].get('DB_PASSWORD', None),
-                self.__config[service].get('DB_MECHANISM', 'SCRAM-SHA-256')
-            ):
-                self._logger.info(
-                    f'[{service}] Mongo connection SUCCESS'
+        try:
+            if self._devMode is False:
+                dbs = DbConnection(self._logger)
+                if dbs.mongoconnect(
+                    self.__config[service].get('DB_HOST', None),
+                    self.__config[service].get('DB_PORT', None),
+                    self.__config[service].get('DB_DATABASE', None),
+                    self.__config[service].get('DB_USERNAME', None),
+                    self.__config[service].get('DB_PASSWORD', None),
+                    self.__config[service].get('DB_MECHANISM', 'SCRAM-SHA-256')
+                ):
+                    self._logger.info(
+                        f'[{service}] Mongo connection SUCCESS'
+                    )
+                    return True
+                self._logger.error(
+                    f"[{service}] Mongo Authentication FAILURE"
                 )
-                return True
+                self._logger.info(
+                    f"[{service}] SKIP"
+                )
+                return False
+            self._logger.debug(f"DEV MODE ENABLE")
+            return True
+        except Exception as e:
             self._logger.error(
-                f"[{service}] Mongo Authentication FAILURE"
+                f"[{service}] Mongo Authentication FAILURE {e}"
             )
-            return False
-        self._logger.debug(f"DEV MODE ENABLE")
-        return True
+            self._logger.info(
+                f"[{service}] SKIP"
+            )
