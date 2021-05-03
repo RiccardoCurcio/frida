@@ -42,13 +42,14 @@ class Mongo:
             f'mongodump',
             f"--host={self.__proc._cmd.config[self.__service].get('DB_HOST', None)}",
             f"--port={self.__proc._cmd.config[self.__service].get('DB_PORT', None)}",
-            f"--authenticationDatabase={self.__proc._cmd.config[self.__service].get('DB_DATABASE', None)}"
-            f"--user={self.__proc._cmd.config[self.__service].get('DB_USERNAME', None)}",
+            f"--authenticationDatabase={self.__proc._cmd.config[self.__service].get('DB_DATABASE', None)}",
+            f"--username={self.__proc._cmd.config[self.__service].get('DB_USERNAME', None)}",
             f"--password={self.__proc._cmd.config[self.__service].get('DB_PASSWORD', None)}",
             f"--authenticationMechanism={self.__proc._cmd.config[self.__service].get('DB_MECHANISM', 'SCRAM-SHA-256')}",
             '--forceTableScan',
             f'--out={self.__dumpPath}'
         ]
+        print()
 
     def run(self):
         try:
@@ -106,6 +107,7 @@ class Mongo:
                     f".jsonStore.json UPDATED"
                 )
         except Exception as e:
+            self._logger.error(f"[{self.__service}] {e}")
             Mongo.ServiceLogger.error(
                     self.__logFile,
                     self.__service,
