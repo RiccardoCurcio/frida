@@ -42,6 +42,7 @@ class HelpProcess(Process):
                 "python3 -m frida -c --service=mysql_service_name_2 --clear-gateway-except"
             ],
             "flags": [
+                ["-C", "--check     ", "Check connections and dependencies"],
                 ["-c", "--clear     ", "Clear old backups"],
                 ["-b", "--backup    ", "run backup"],
                 ["-l", "--list      ", "list of backup"],
@@ -49,11 +50,18 @@ class HelpProcess(Process):
                 ["-v", "--version   ", "print version"]
             ],
             "options": [
-                ["--config                  ", "specific ini file ex. --config=/path/of/custom/fileini.ini"],
-                ["--service                 ", "list of sarvice ex. --service=sevice_one,service_two"],
-                ["--clear-interval          ", "Override clear interval value (alias NOW = 0) ex. --clear-interval=10 "],
-                ["--gateway                 ", "Override gateway value ex. --gateway=gateway-name-one,gateway-name-two"],
-                ["--clear-gateway-except    ", "Override clear gateway exception ex. --clear-gateway-except=gateway-name-one,gateway-name-two or --clear-gateway-except clear all excepions"]
+                ["--config                  ", "specific ini file"],
+                ["                          ", "ex. --config=/path/of/custom/fileini.ini"],
+                ["--service                 ", "list of sarvice"],
+                ["                          ", "ex. --service=sevice_one,service_two"],
+                ["--clear-interval          ", "Override clear interval value (alias NOW = 0)"],
+                ["                          ", "ex. --clear-interval=NOW"],
+                ["                          ", "ex. --clear-interval=10"],
+                ["--gateway                 ", "Override gateway value"],
+                ["                          ", "ex. --gateway=gateway-name-one,gateway-name-two"],
+                ["--clear-gateway-except    ", "Override clear gateway exception"],
+                ["                          ", "ex. --clear-gateway-except=gateway-name-one,gateway-name-two"],
+                ["                          ", "ex. --clear-gateway-except remove all excepions"]
             ]
         }
         pass
@@ -68,11 +76,11 @@ class HelpProcess(Process):
         for examples in self.__help.get("examples"):
             print(f"\t {examples}")
 
-        print("FLAGS")
+        print("\nFLAGS")
         for flags in self.__help.get("flags"):
             print(f"\t {flags[0]} {flags[1]} {flags[2]}")
 
-        print("OPTIONS")
+        print("\nOPTIONS")
         for options in self.__help.get("options"):
             print(f"\t {options[0]} {options[1]}")
 

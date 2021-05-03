@@ -6,6 +6,7 @@ from src.application.handler.handler.backup import Backup
 from src.application.handler.handler.clear import Clear
 from src.application.handler.handler.list import List
 from src.application.handler.handler.help import Help
+from src.application.handler.handler.check import Check
 from src.application.handler.handler.version import Version
 
 
@@ -25,6 +26,22 @@ class HandlerFactory:
             handler = List(config, logger, args)
             handler.run()
             sys.exit(0)
+        elif "--check" in args or "-C" in args:
+            # call check handeler
+            Dependencies(logger).check()
+            handler = Check(config, logger, args)
+            handler.run()
+            sys.exit(0)
+        elif "--help" in args or "-h" in args:
+            # call help handeler
+            handler = Help(config, logger, args)
+            handler.run()
+            sys.exit(0)
+        elif "--version" in args or "-v" in args:
+            # call version handeler
+            handler = Version(config, logger, args)
+            handler.run()
+            sys.exit(0)
         elif "--backup" in args or "-b" in args:
             Dependencies(logger).check()
             # call backup handeler
@@ -39,16 +56,6 @@ class HandlerFactory:
             Dependencies(logger).check()
             # call clear handeler
             handler = Clear(config, logger, args)
-            handler.run()
-            sys.exit(0)
-        elif "--help" in args or "-h" in args:
-            # call help handeler
-            handler = Help(config, logger, args)
-            handler.run()
-            sys.exit(0)
-        elif "--version" in args or "-v" in args:
-            # call version handeler
-            handler = Version(config, logger, args)
             handler.run()
             sys.exit(0)
         else:
