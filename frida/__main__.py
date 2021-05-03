@@ -20,6 +20,7 @@ def main(logger, config):
     if "--list" in sys.argv or "-l" in sys.argv:
         listBk = List(logger)
         listBk.run(
+            dbs,
             config,
             Only.getOnlyService(sys.argv, logger, config)
         )
