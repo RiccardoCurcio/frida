@@ -25,7 +25,9 @@ class Clear(Handler):
         self.__overrideClearInterval = ClearInterval.setClearInterval(args, logger)
         pass
 
-    def run(self):
+    def run(self) -> None:
+        """[run]
+        """
         ClearProcess(
             self.logger,
             ClearCommand(

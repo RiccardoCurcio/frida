@@ -19,7 +19,9 @@ class List(Handler):
         self.__services = Service.getOnlyService(args, logger, config)
         pass
 
-    def run(self):
+    def run(self) -> None:
+        """[Run]
+        """
         ListProcess(
             self.logger,
             ListCommand(self.__config, self.__services)

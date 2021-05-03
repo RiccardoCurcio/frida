@@ -21,7 +21,9 @@ class Backup(Handler):
         self.__overrideGateway = OverrideGateway.setGateway(args, logger)
         pass
 
-    def run(self):
+    def run(self) -> None:
+        """[Run]
+        """
         BackupProcess(
             self.logger,
             BackupCommand(

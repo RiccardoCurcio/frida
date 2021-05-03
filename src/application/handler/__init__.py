@@ -1,5 +1,3 @@
-"""[summary]
-"""
 import sys
 import logging
 from configparser import ConfigParser
@@ -15,6 +13,13 @@ class HandlerFactory:
 
     @staticmethod
     def run(config: ConfigParser, logger: logging.Logger, args: list) -> None:
+        """[Run]
+
+        Args:
+            config (ConfigParser): [config parser]
+            logger (logging.Logger): [logger]
+            args (list): [arg list]
+        """
         if "--list" in args or "-l" in args:
             # call list handeler
             handler = List(config, logger, args)

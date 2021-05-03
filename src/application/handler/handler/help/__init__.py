@@ -17,7 +17,9 @@ class Help(Handler):
         self.__config = config
         pass
 
-    def run(self):
+    def run(self) -> None:
+        """[run]
+        """
         HelpProcess(
             self.logger,
             HelpCommand(self.__config)

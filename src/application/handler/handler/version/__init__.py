@@ -17,7 +17,9 @@ class Version(Handler):
         self.__config = config
         pass
 
-    def run(self):
+    def run(self) -> None:
+        """[Run]
+        """
         VersionProcess(
             self.logger,
             VersionCommand(self.__config)

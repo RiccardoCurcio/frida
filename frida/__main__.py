@@ -9,6 +9,12 @@ from src.bootstrap import Bootstrap
 
 
 def main(config: ConfigParser, logger: logging.Logger) -> None:
+    """[Main]
+
+    Args:
+        config (ConfigParser): [config parser]
+        logger (logging.Logger): [logger]
+    """
     HandlerFactory.run(config, logger, sys.argv)
 
 
