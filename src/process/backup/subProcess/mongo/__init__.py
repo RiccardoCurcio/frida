@@ -231,22 +231,23 @@ class Mongo:
             list: [description]
         """
         locations = []
-        
+
         for gatewayPath in self.__gateway:
             try:
+                g = Gateway.get(gatewayPath, self._logger)
                 if not self.__proc._devMode:
-                    g = Gateway.get(gatewayPath, self._logger)
                     key = g.send(archive)
-                    if key is None:
-                        raise Exception("None key from gateway")
-                    locations.append({'location': gatewayPath, 'key': key})
                 else:
-                    locations.append({'location': gatewayPath, 'key': 'dev-mode'})
+                    key = 'dev-mode'
                     self._logger.debug(f"[{self.__service}] gateway send DEV MODE TRUE")
+                if key is None:
+                    raise Exception("None key from gateway")
+                locations.append({'location': gatewayPath, 'key': key})
+
             except Exception as e:
                 self._logger.error(f"Call gateway error {e}")
                 raise Exception(f"__callGateway {e}")
-       
+
         return locations
 
     def __updateJsonStore(self,  locations: list) -> None:

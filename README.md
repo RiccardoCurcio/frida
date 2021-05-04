@@ -2,6 +2,11 @@
 
 Create backup (tgz archive) from multiple database mongoDB, mysql, mariaDB
 
+# Dependencies
+    - mysqldump
+    - mongodump (mongoshell)
+    - tar
+
 # Installation
 
 ```
@@ -33,7 +38,7 @@ DB_DATABASE = dbname
 DB_USERNAME = username
 DB_PASSWORD = password
 # send archive to external storage
-; if GATEWAY is set and 'local' is in list of gateway the local the archives will be persistent
+; if GATEWAY is set and 'local' is in list of gateway the local archives will be persistent
 ; GATEWAY = custom.customgateway,s3,local
 # clear from external storage
 ; CLEAR_GATEWAY_EXCEPT = custom.customgateway
@@ -76,58 +81,101 @@ DB_MECHANISM = SCRAM-SHA-256
 
 ```
 # Usage
+
+check connections an dependencies
 ```
-    // create backup archive for all services
+    $ python3 -m frida -C
+```
+
+check connections an dependencies for different `config.ini`
+```
+    $ python3 -m frida --config=custom_config.ini -C
+```
+
+create backup archive for all services
+```
     $ python3 -m frida -b
+```
 
-    // create backup archive for all services use different config file
+create backup archive for all services use different config file
+```
     $ python3 -m frida --config=custom_config.ini -b
+```
 
-    // create backup archive only for services mysql_service_name_2 and mongo_service_name_1
+create backup archive only for services mysql_service_name_2 and mongo_service_name_1
+```
     $ python3 -m frida --config=custom_config.ini -b --service=mysql_service_name_2,mongo_service_name_1
+```
 
-    // create backup archive for service mysql_service_name_2 and override gateway value
+create backup archive for service mysql_service_name_2 and override gateway value
+```
     $ python3 -m frida -b --service=mysql_service_name_2 --gateway=local
+```
 
-    // list of backups use different config file
+list of backups use different config file
+```
     $ python3 -m frida --config=custom_config.ini -l
-    
-    // list of backups
+```    
+
+list of backups
+```
     $ python3 -m frida -l
+```
 
-    // clear all old backup
+clear all old backup
+```
     $ python3 -m frida -c
+```
 
-    // create backup and clear old backup
+create new backup and clear old backup
+```
     $ python3 -m frida -b -c
+```
 
-    // clear all old backup for service mysql_service_name_2
+clear all old backup for service mysql_service_name_2
+```
     $ python3 -m frida -c --service=mysql_service_name_2
+```
 
-    // clear all old backup for all services with ovveride clear interval value
+clear all old backup for all services with ovveride `clear interval` value
+```
     python3 -m frida --config=config.ini -c --clear-interval=NOW
+```
 
-    // clear all old backup for all services with ovveride clear interval value
+clear all old backup for all services with ovveride `clear interval` value
+```
     python3 -m frida --config=config.ini -c --clear-interval=10
+```
 
-    // clear all old backup for service mysql_service_name_2 override gateway value override clear gateway except value
+clear all old backup for service mysql_service_name_2 override `gateway` value override `clear gateway except` value
+```
     python3 -m frida -c --service=mysql_service_name_2  --gateway=local --clear-gateway-except
+```
 
-    // clear all old backup for service mysql_service_name_2 override gateway value and override clear gateway except value
+clear all old backup for service mysql_service_name_2 override `gateway` value and override `clear gateway except` value
+```
     python3 -m frida -c --service=mysql_service_name_2  --gateway=local --clear-gateway-except=custom.customgateway
+```
 
-    // clear all old backup for service mysql_service_name_2 override clear gateway except value (empty the exceptions)
+clear all old backup for service mysql_service_name_2 override `clear gateway except` value (empty the exceptions)
+```
     python3 -m frida -c --service=mysql_service_name_2 --clear-gateway-except 
+```
 
-    // Print help
+Print help
+```bash
     $ python3 -m frida -h
 ```
-# Create Custom gateway
-```
-    // create new directory in gateways/custom
-    $ cd gateways/custom && mkdir custom_gateway
 
-    // create file __init__.py
+# Create Custom gateway
+
+create new directory in gateways/custom
+```
+    $ cd gateways/custom && mkdir custom_gateway
+```
+
+create file `__init__.py`
+```
     $ cd custom_gateway && touch __init__.py
 ```
 

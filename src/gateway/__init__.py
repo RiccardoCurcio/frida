@@ -12,7 +12,8 @@ class Gateway:
             gateway = Gateway.load_module(modulePath, modName)
             return getattr(gateway, modName)(logger)
         except Exception as e:
-            print(f"gateway error {gatewayPath} {e}")
+            logger.error(f"Gateway error {gatewayPath} {e}")
+            raise Exception("Gateway error")
 
     @staticmethod
     def load_module(modPath, modName):
