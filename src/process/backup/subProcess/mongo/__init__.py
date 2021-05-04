@@ -235,7 +235,7 @@ class Mongo:
         for gatewayPath in self.__gateway:
             try:
                 g = Gateway.get(gatewayPath, self._logger)
-                if not self.__proc._devMode:
+                if not self.__proc._devMode and g.check():
                     key = g.send(archive)
                 else:
                     key = 'dev-mode'

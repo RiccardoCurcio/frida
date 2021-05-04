@@ -112,8 +112,8 @@ class Clear:
             else:
                 if item["l"] in self.__gateway:
                     try:
-                        if not self.__proc._devMode:
-                            g = Gateway.get(item["l"], self._logger)
+                        g = Gateway.get(item["l"], self._logger)
+                        if not self.__proc._devMode and g.check():
                             g.delete(item["k"])
                             self._logger.info(
                                 f'[{self.__service}] gateway remove {item["l"]} {item["k"]}'

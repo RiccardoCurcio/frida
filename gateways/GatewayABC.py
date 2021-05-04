@@ -14,3 +14,7 @@ class GatewayABC(ABC):
     @abstractmethod
     def delete(self):
         pass
+
+    @abstractmethod
+    def check(self) -> bool:
+        pass

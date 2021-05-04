@@ -127,11 +127,6 @@ clear all old backup
     $ python3 -m frida -c
 ```
 
-create new backup and clear old backup
-```
-    $ python3 -m frida -b -c
-```
-
 clear all old backup for service mysql_service_name_2
 ```
     $ python3 -m frida -c --service=mysql_service_name_2

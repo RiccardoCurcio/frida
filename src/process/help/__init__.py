@@ -32,7 +32,6 @@ class HelpProcess(Process):
             "usage": "python3 -m frida [FLAGS] [OPTIONS]",
             "examples": [
                 "python3 -m frida -b",
-                "python3 -m frida -b -c",
                 "python3 -m frida -l",
                 "python3 -m frida --config=config.ini -b --service=mysql_db",
                 "python3 -m frida --config=config.ini -l --service=mongo_db",

@@ -100,5 +100,4 @@ class HandlerFactory:
             confParam = list(filter(r.match, allowed[cmd]["options"]))
             if len(confParam) == 0:
                 print(f'{opt} Not valid option show help')
-                sys.exit(1) 
-        
+                sys.exit(1)
